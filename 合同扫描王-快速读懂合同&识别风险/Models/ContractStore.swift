@@ -28,8 +28,10 @@ class ContractStore {
     
     func updateContract(_ contract: Contract) {
         if let index = contracts.firstIndex(where: { $0.id == contract.id }) {
-            contracts[index] = contract
-            contracts[index].updatedAt = Date()
+            var updatedContract = contract
+            updatedContract.updatedAt = Date()
+            contracts.remove(at: index)
+            contracts.insert(updatedContract, at: index)
             saveContracts()
         }
     }

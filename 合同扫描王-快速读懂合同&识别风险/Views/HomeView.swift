@@ -142,10 +142,11 @@ struct HomeView: View {
                 .padding(.vertical, 40)
             } else {
                 ForEach(contractStore.contracts.prefix(5)) { contract in
+                    let currentContract = contractStore.getContract(by: contract.id) ?? contract
                     NavigationLink {
-                        ContractDetailView(contract: contract)
+                        ContractDetailView(contract: currentContract)
                     } label: {
-                        ContractRow(contract: contract)
+                        ContractRow(contract: currentContract)
                     }
                     .buttonStyle(.plain)
                 }
