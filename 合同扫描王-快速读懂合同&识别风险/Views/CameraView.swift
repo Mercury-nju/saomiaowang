@@ -7,12 +7,13 @@ import SwiftUI
 import UIKit
 import AVFoundation
 import UniformTypeIdentifiers
+import Observation
 
 // MARK: - 手动拍照相机
 struct CameraView: View {
     @Binding var images: [UIImage]
     @Binding var isPresented: Bool
-    @StateObject private var camera = CameraModel()
+    @State private var camera = CameraModel()
     @State private var capturedImages: [UIImage] = []
     
     var body: some View {
@@ -134,10 +135,11 @@ struct CameraView: View {
 }
 
 // MARK: - 相机模型
-class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptureDelegate {
-    @Published var session = AVCaptureSession()
-    @Published var output = AVCapturePhotoOutput()
-    @Published var preview: AVCaptureVideoPreviewLayer?
+@Observable
+class CameraModel: NSObject, AVCapturePhotoCaptureDelegate {
+    var session = AVCaptureSession()
+    var output = AVCapturePhotoOutput()
+    var preview: AVCaptureVideoPreviewLayer?
     
     private var photoCompletion: ((UIImage?) -> Void)?
     
@@ -203,7 +205,7 @@ class CameraModel: NSObject, ObservableObject, AVCapturePhotoCaptureDelegate {
 
 // MARK: - 相机预览
 struct CameraPreview: UIViewRepresentable {
-    @ObservedObject var camera: CameraModel
+    var camera: CameraModel
     
     func makeUIView(context: Context) -> UIView {
         let view = UIView(frame: UIScreen.main.bounds)

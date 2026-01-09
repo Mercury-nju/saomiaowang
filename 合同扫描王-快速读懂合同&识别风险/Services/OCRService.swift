@@ -7,7 +7,7 @@ import Foundation
 import Vision
 import UIKit
 
-class OCRService {
+final class OCRService: Sendable {
     static let shared = OCRService()
     
     private init() {}
@@ -18,7 +18,7 @@ class OCRService {
             throw OCRError.invalidImage
         }
         
-        return try await withCheckedThrowingContinuation { continuation in
+        return try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<String, Error>) in
             let request = VNRecognizeTextRequest { request, error in
                 if let error = error {
                     continuation.resume(throwing: OCRError.recognitionFailed(error.localizedDescription))
