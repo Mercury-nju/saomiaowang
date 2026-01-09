@@ -22,9 +22,9 @@ struct MainTabView: View {
                 }
                 .tag(1)
             
-            SettingsView()
+            ProfileView()
                 .tabItem {
-                    Label("设置", systemImage: "gearshape.fill")
+                    Label("我的", systemImage: "person.fill")
                 }
                 .tag(2)
         }
@@ -35,4 +35,5 @@ struct MainTabView: View {
 #Preview {
     MainTabView()
         .environment(ContractStore())
+        .environment(UserStore())
 }
