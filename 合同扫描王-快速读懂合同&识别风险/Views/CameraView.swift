@@ -7,41 +7,195 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
-// MARK: - 相机拍照（单张）
-struct CameraView: UIViewControllerRepresentable {
+// MARK: - 多页拍摄管理视图
+struct CameraView: View {
     @Binding var images: [UIImage]
     @Binding var isPresented: Bool
+    
+    @State private var capturedImages: [UIImage] = []
+    @State private var showImagePicker = false
+    @State private var pickerKey = UUID()
+    
+    var body: some View {
+        NavigationStack {
+            VStack(spacing: 0) {
+                if capturedImages.isEmpty {
+                    emptyState
+                } else {
+                    photoList
+                }
+                
+                bottomBar
+            }
+            .background(Color(.systemGroupedBackground))
+            .navigationTitle("拍摄合同")
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    Button("取消") {
+                        isPresented = false
+                    }
+                }
+                
+                ToolbarItem(placement: .navigationBarTrailing) {
+                    if !capturedImages.isEmpty {
+                        Button("完成") {
+                            images = capturedImages
+                            isPresented = false
+                        }
+                        .fontWeight(.semibold)
+                    }
+                }
+            }
+            .fullScreenCover(isPresented: $showImagePicker) {
+                SingleImagePicker(onComplete: handleImagePicked)
+                    .id(pickerKey)
+                    .ignoresSafeArea()
+            }
+        }
+    }
+    
+    // MARK: - 空状态
+    private var emptyState: some View {
+        VStack(spacing: 16) {
+            Spacer()
+            
+            Image(systemName: "camera")
+                .font(.system(size: 50))
+                .foregroundColor(.secondary.opacity(0.5))
+            
+            Text("点击下方按钮开始拍摄")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Text("支持拍摄多页合同")
+                .font(.caption)
+                .foregroundColor(.secondary.opacity(0.7))
+            
+            Spacer()
+        }
+    }
+    
+    // MARK: - 照片列表
+    private var photoList: some View {
+        ScrollView {
+            LazyVStack(spacing: 12) {
+                ForEach(Array(capturedImages.enumerated()), id: \.offset) { index, image in
+                    photoRow(index: index, image: image)
+                }
+            }
+            .padding()
+        }
+    }
+    
+    private func photoRow(index: Int, image: UIImage) -> some View {
+        HStack(spacing: 12) {
+            Image(uiImage: image)
+                .resizable()
+                .scaledToFill()
+                .frame(width: 80, height: 100)
+                .clipped()
+                .cornerRadius(8)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text("第 \(index + 1) 页")
+                    .font(.headline)
+                Text("点击右侧删除")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
+            
+            Button {
+                withAnimation {
+                    capturedImages.remove(at: index)
+                }
+            } label: {
+                Image(systemName: "trash")
+                    .foregroundColor(.red)
+                    .padding(8)
+            }
+        }
+        .padding()
+        .background(Color(.systemBackground))
+        .cornerRadius(10)
+    }
+    
+    // MARK: - 底部操作栏
+    private var bottomBar: some View {
+        VStack(spacing: 12) {
+            Divider()
+            
+            Button {
+                openCamera()
+            } label: {
+                HStack {
+                    Image(systemName: "camera.fill")
+                    Text(capturedImages.isEmpty ? "开始拍摄" : "继续拍摄第 \(capturedImages.count + 1) 页")
+                }
+                .font(.headline)
+                .foregroundColor(.white)
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(Color.blue)
+                .cornerRadius(12)
+            }
+            .padding(.horizontal)
+            .padding(.bottom, 8)
+        }
+        .background(Color(.systemBackground))
+    }
+    
+    private func openCamera() {
+        pickerKey = UUID()
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            showImagePicker = true
+        }
+    }
+    
+    private func handleImagePicked(_ image: UIImage?) {
+        showImagePicker = false
+        if let image = image {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                capturedImages.append(image)
+            }
+        }
+    }
+}
+
+// MARK: - 单张拍照
+struct SingleImagePicker: UIViewControllerRepresentable {
+    let onComplete: (UIImage?) -> Void
     
     func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
         picker.delegate = context.coordinator
-        picker.allowsEditing = false
+        picker.modalPresentationStyle = .fullScreen
         return picker
     }
     
     func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
-        Coordinator(self)
+        Coordinator(onComplete: onComplete)
     }
     
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
-        let parent: CameraView
+        let onComplete: (UIImage?) -> Void
         
-        init(_ parent: CameraView) {
-            self.parent = parent
+        init(onComplete: @escaping (UIImage?) -> Void) {
+            self.onComplete = onComplete
         }
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
-            if let image = info[.originalImage] as? UIImage {
-                parent.images = [image]
-            }
-            parent.isPresented = false
+            let image = info[.originalImage] as? UIImage
+            onComplete(image)
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            parent.isPresented = false
+            onComplete(nil)
         }
     }
 }
@@ -55,7 +209,6 @@ struct PhotoPickerView: UIViewControllerRepresentable {
         let picker = UIImagePickerController()
         picker.sourceType = .photoLibrary
         picker.delegate = context.coordinator
-        picker.allowsEditing = false
         return picker
     }
     

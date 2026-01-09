@@ -35,7 +35,7 @@ struct HomeView: View {
             }
             .background(Color(.systemGroupedBackground))
             .navigationTitle("合同扫描王")
-            .sheet(isPresented: $showCamera) {
+            .fullScreenCover(isPresented: $showCamera) {
                 CameraView(images: $selectedImages, isPresented: $showCamera)
             }
             .sheet(isPresented: $showPhotoPicker) {
