@@ -7,24 +7,20 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
-// MARK: - 相机拍照（手动控制）
+// MARK: - 相机拍照
 struct CameraView: UIViewControllerRepresentable {
     @Binding var images: [UIImage]
     @Binding var isPresented: Bool
     
-    func makeUIViewController(context: Context) -> UINavigationController {
+    func makeUIViewController(context: Context) -> UIImagePickerController {
         let picker = UIImagePickerController()
         picker.sourceType = .camera
         picker.delegate = context.coordinator
         picker.allowsEditing = false
-        
-        // 包装在导航控制器中以便添加多页拍摄功能
-        let nav = UINavigationController(rootViewController: picker)
-        nav.isNavigationBarHidden = true
-        return nav
+        return picker
     }
     
-    func updateUIViewController(_ uiViewController: UINavigationController, context: Context) {}
+    func updateUIViewController(_ uiViewController: UIImagePickerController, context: Context) {}
     
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
@@ -42,11 +38,14 @@ struct CameraView: UIViewControllerRepresentable {
             if let image = info[.originalImage] as? UIImage {
                 capturedImages.append(image)
                 
-                // 显示继续拍摄或完成的选项
-                let alert = UIAlertController(title: "已拍摄 \(capturedImages.count) 页", message: "是否继续拍摄下一页？", preferredStyle: .alert)
+                let alert = UIAlertController(
+                    title: "已拍摄 \(capturedImages.count) 页",
+                    message: "继续拍摄或完成",
+                    preferredStyle: .alert
+                )
                 
                 alert.addAction(UIAlertAction(title: "继续拍摄", style: .default) { _ in
-                    // 重新打开相机
+                    // picker 会保持打开状态
                 })
                 
                 alert.addAction(UIAlertAction(title: "完成", style: .cancel) { [weak self] _ in
@@ -60,24 +59,10 @@ struct CameraView: UIViewControllerRepresentable {
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            if capturedImages.isEmpty {
-                parent.isPresented = false
-            } else {
-                // 如果已经拍了照片，询问是否保存
-                let alert = UIAlertController(title: "已拍摄 \(capturedImages.count) 页", message: "是否使用已拍摄的照片？", preferredStyle: .alert)
-                
-                alert.addAction(UIAlertAction(title: "使用", style: .default) { [weak self] _ in
-                    guard let self = self else { return }
-                    self.parent.images = self.capturedImages
-                    self.parent.isPresented = false
-                })
-                
-                alert.addAction(UIAlertAction(title: "放弃", style: .destructive) { [weak self] _ in
-                    self?.parent.isPresented = false
-                })
-                
-                picker.present(alert, animated: true)
+            if !capturedImages.isEmpty {
+                parent.images = capturedImages
             }
+            parent.isPresented = false
         }
     }
 }
