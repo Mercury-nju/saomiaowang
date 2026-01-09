@@ -7,7 +7,7 @@ import SwiftUI
 import UIKit
 import UniformTypeIdentifiers
 
-// MARK: - 相机拍照
+// MARK: - 相机拍照（单张）
 struct CameraView: UIViewControllerRepresentable {
     @Binding var images: [UIImage]
     @Binding var isPresented: Bool
@@ -28,7 +28,6 @@ struct CameraView: UIViewControllerRepresentable {
     
     class Coordinator: NSObject, UIImagePickerControllerDelegate, UINavigationControllerDelegate {
         let parent: CameraView
-        var capturedImages: [UIImage] = []
         
         init(_ parent: CameraView) {
             self.parent = parent
@@ -36,32 +35,12 @@ struct CameraView: UIViewControllerRepresentable {
         
         func imagePickerController(_ picker: UIImagePickerController, didFinishPickingMediaWithInfo info: [UIImagePickerController.InfoKey : Any]) {
             if let image = info[.originalImage] as? UIImage {
-                capturedImages.append(image)
-                
-                let alert = UIAlertController(
-                    title: "已拍摄 \(capturedImages.count) 页",
-                    message: "继续拍摄或完成",
-                    preferredStyle: .alert
-                )
-                
-                alert.addAction(UIAlertAction(title: "继续拍摄", style: .default) { _ in
-                    // picker 会保持打开状态
-                })
-                
-                alert.addAction(UIAlertAction(title: "完成", style: .cancel) { [weak self] _ in
-                    guard let self = self else { return }
-                    self.parent.images = self.capturedImages
-                    self.parent.isPresented = false
-                })
-                
-                picker.present(alert, animated: true)
+                parent.images = [image]
             }
+            parent.isPresented = false
         }
         
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) {
-            if !capturedImages.isEmpty {
-                parent.images = capturedImages
-            }
             parent.isPresented = false
         }
     }
