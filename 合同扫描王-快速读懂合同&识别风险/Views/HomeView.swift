@@ -19,20 +19,18 @@ struct HomeView: View {
     var body: some View {
         NavigationStack {
             ScrollView {
-                VStack(spacing: 0) {
-                    // 顶部统计
-                    statsHeader
-                        .padding(.horizontal)
-                        .padding(.top, 8)
+                VStack(spacing: 24) {
+                    // 核心扫描区域
+                    scanSection
                     
-                    // 主操作区
-                    mainActions
-                        .padding()
+                    // 其他导入方式
+                    otherImportSection
                     
                     // 最近合同
                     recentSection
-                        .padding(.horizontal)
                 }
+                .padding(.horizontal)
+                .padding(.top, 12)
                 .padding(.bottom, 20)
             }
             .background(Color(.systemGroupedBackground))
@@ -64,69 +62,58 @@ struct HomeView: View {
         }
     }
     
-    // MARK: - 统计头部
-    private var statsHeader: some View {
-        HStack(spacing: 0) {
-            StatItem(value: "\(contractStore.totalContracts)", label: "全部", color: .primary)
-            
-            Divider()
-                .frame(height: 30)
-            
-            StatItem(value: "\(contractStore.analyzedContracts)", label: "已分析", color: .green)
-            
-            Divider()
-                .frame(height: 30)
-            
-            StatItem(value: "\(contractStore.highRiskCount)", label: "高风险", color: .red)
-        }
-        .padding(.vertical, 16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-    }
-    
-    // MARK: - 主操作区
-    private var mainActions: some View {
-        VStack(spacing: 12) {
-            // 扫描按钮 - 主要操作
-            Button {
-                showCamera = true
-            } label: {
-                HStack {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text("扫描合同")
-                            .font(.headline)
-                            .foregroundColor(.white)
-                        Text("拍照识别，支持多页")
-                            .font(.caption)
-                            .foregroundColor(.white.opacity(0.8))
-                    }
-                    
-                    Spacer()
+    // MARK: - 扫描区域
+    private var scanSection: some View {
+        Button {
+            showCamera = true
+        } label: {
+            VStack(spacing: 20) {
+                // 图标
+                ZStack {
+                    Circle()
+                        .fill(Color.blue)
+                        .frame(width: 80, height: 80)
                     
                     Image(systemName: "camera.fill")
-                        .font(.system(size: 24))
-                        .foregroundColor(.white.opacity(0.9))
+                        .font(.system(size: 32))
+                        .foregroundColor(.white)
                 }
-                .padding()
-                .background(Color.blue)
-                .cornerRadius(12)
+                
+                // 文字
+                VStack(spacing: 6) {
+                    Text("扫描合同")
+                        .font(.title3)
+                        .fontWeight(.semibold)
+                        .foregroundColor(.primary)
+                    
+                    Text("拍照识别合同内容，智能分析风险")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 32)
+            .background(Color(.systemBackground))
+            .cornerRadius(16)
+        }
+        .buttonStyle(.plain)
+    }
+    
+    // MARK: - 其他导入
+    private var otherImportSection: some View {
+        HStack(spacing: 12) {
+            ImportButton(title: "相册导入", icon: "photo") {
+                showPhotoPicker = true
             }
             
-            // 次要操作
-            HStack(spacing: 12) {
-                SecondaryButton(title: "相册导入", icon: "photo", color: .orange) {
-                    showPhotoPicker = true
-                }
-                
-                SecondaryButton(title: "文件导入", icon: "doc", color: .purple) {
-                    showDocumentPicker = true
-                }
-                
-                NavigationLink {
-                    ContractCompareView()
-                } label: {
-                    SecondaryButtonLabel(title: "合同对比", icon: "doc.on.doc", color: .teal)
-                }
+            ImportButton(title: "文件导入", icon: "folder") {
+                showDocumentPicker = true
+            }
+            
+            NavigationLink {
+                ContractCompareView()
+            } label: {
+                ImportButtonLabel(title: "合同对比", icon: "doc.on.doc")
             }
         }
     }
@@ -134,7 +121,7 @@ struct HomeView: View {
     // MARK: - 最近合同
     private var recentSection: some View {
         VStack(spacing: 0) {
-            // 标题栏
+            // 标题
             HStack {
                 Text("最近合同")
                     .font(.headline)
@@ -143,7 +130,7 @@ struct HomeView: View {
                     NavigationLink {
                         ContractListView()
                     } label: {
-                        Text("查看全部")
+                        Text("全部")
                             .font(.subheadline)
                             .foregroundColor(.blue)
                     }
@@ -156,19 +143,16 @@ struct HomeView: View {
             
             // 列表
             if contractStore.contracts.isEmpty {
-                VStack(spacing: 12) {
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 40))
-                        .foregroundColor(.secondary.opacity(0.5))
-                    Text("暂无合同记录")
+                VStack(spacing: 8) {
+                    Image(systemName: "doc.text")
+                        .font(.system(size: 36))
+                        .foregroundColor(.secondary.opacity(0.4))
+                    Text("暂无合同")
                         .font(.subheadline)
                         .foregroundColor(.secondary)
-                    Text("扫描或导入合同开始使用")
-                        .font(.caption)
-                        .foregroundColor(.secondary.opacity(0.8))
                 }
                 .frame(maxWidth: .infinity)
-                .padding(.vertical, 50)
+                .padding(.vertical, 44)
                 .background(Color(.systemBackground))
             } else {
                 LazyVStack(spacing: 0) {
@@ -183,8 +167,7 @@ struct HomeView: View {
                         .buttonStyle(.plain)
                         
                         if index < min(4, contractStore.contracts.count - 1) {
-                            Divider()
-                                .padding(.leading, 60)
+                            Divider().padding(.leading, 56)
                         }
                     }
                 }
@@ -226,55 +209,34 @@ struct HomeView: View {
     }
 }
 
-// MARK: - 统计项
-struct StatItem: View {
-    let value: String
-    let label: String
-    let color: Color
-    
-    var body: some View {
-        VStack(spacing: 4) {
-            Text(value)
-                .font(.system(size: 22, weight: .semibold, design: .rounded))
-                .foregroundColor(color)
-            Text(label)
-                .font(.caption)
-                .foregroundColor(.secondary)
-        }
-        .frame(maxWidth: .infinity)
-    }
-}
-
-// MARK: - 次要按钮
-struct SecondaryButton: View {
+// MARK: - 导入按钮
+struct ImportButton: View {
     let title: String
     let icon: String
-    let color: Color
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            SecondaryButtonLabel(title: title, icon: icon, color: color)
+            ImportButtonLabel(title: title, icon: icon)
         }
     }
 }
 
-struct SecondaryButtonLabel: View {
+struct ImportButtonLabel: View {
     let title: String
     let icon: String
-    let color: Color
     
     var body: some View {
         VStack(spacing: 8) {
             Image(systemName: icon)
                 .font(.system(size: 20))
-                .foregroundColor(color)
+                .foregroundColor(.secondary)
             Text(title)
                 .font(.caption)
-                .foregroundColor(.primary)
+                .foregroundColor(.secondary)
         }
         .frame(maxWidth: .infinity)
-        .padding(.vertical, 14)
+        .padding(.vertical, 16)
         .background(Color(.systemBackground))
         .cornerRadius(10)
     }
@@ -289,68 +251,49 @@ struct ContractCell: View {
             // 状态图标
             ZStack {
                 Circle()
-                    .fill(statusColor.opacity(0.12))
-                    .frame(width: 44, height: 44)
+                    .fill(statusColor.opacity(0.1))
+                    .frame(width: 40, height: 40)
                 
                 Image(systemName: statusIcon)
-                    .font(.system(size: 18))
+                    .font(.system(size: 16))
                     .foregroundColor(statusColor)
             }
             
             // 信息
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 3) {
                 Text(contract.title)
                     .font(.body)
                     .foregroundColor(.primary)
                     .lineLimit(1)
                 
-                HStack(spacing: 6) {
+                HStack(spacing: 4) {
                     Text(contract.status.rawValue)
-                        .font(.caption2)
                         .foregroundColor(statusColor)
                     
                     Text("·")
                         .foregroundColor(.secondary)
                     
                     Text(timeAgo)
-                        .font(.caption2)
                         .foregroundColor(.secondary)
-                    
-                    if let type = contract.analysisResult?.contractType {
-                        Text("·")
-                            .foregroundColor(.secondary)
-                        Text(type)
-                            .font(.caption2)
-                            .foregroundColor(.secondary)
-                            .lineLimit(1)
-                    }
                 }
+                .font(.caption)
             }
             
             Spacer()
             
-            // 风险标记
+            // 风险
             if let analysis = contract.analysisResult {
                 let highRisk = analysis.riskItems.filter { $0.level == .high }.count
                 if highRisk > 0 {
-                    HStack(spacing: 2) {
-                        Image(systemName: "exclamationmark.triangle.fill")
-                            .font(.caption2)
-                        Text("\(highRisk)")
-                            .font(.caption2)
-                            .fontWeight(.medium)
-                    }
-                    .foregroundColor(.red)
-                    .padding(.horizontal, 6)
-                    .padding(.vertical, 3)
-                    .background(Color.red.opacity(0.1))
-                    .cornerRadius(4)
+                    Text("\(highRisk)个风险")
+                        .font(.caption)
+                        .foregroundColor(.red)
                 }
             }
             
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundColor(.secondary.opacity(0.5))
+                .foregroundColor(.quaternary)
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
@@ -395,7 +338,6 @@ struct ProcessingOverlay: View {
                     .tint(.primary)
                 Text("正在识别...")
                     .font(.subheadline)
-                    .foregroundColor(.primary)
             }
             .padding(28)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 14))
