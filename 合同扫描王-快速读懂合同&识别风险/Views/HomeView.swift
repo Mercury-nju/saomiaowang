@@ -293,7 +293,7 @@ struct ContractCell: View {
             
             Image(systemName: "chevron.right")
                 .font(.caption)
-                .foregroundColor(.quaternary)
+                .foregroundColor(.secondary.opacity(0.5))
         }
         .padding(.horizontal, 16)
         .padding(.vertical, 12)
