@@ -269,6 +269,16 @@ struct ContractAnalysisView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 8)
+                
+                // 免责声明
+                HStack(spacing: 6) {
+                    Image(systemName: "info.circle")
+                        .font(.caption)
+                    Text("分析结果由AI生成，仅供参考，不构成法律建议")
+                        .font(.caption)
+                }
+                .foregroundColor(.secondary)
+                .padding(.horizontal)
             }
             .padding(.bottom, 32)
         }

@@ -161,34 +161,63 @@ struct ContractDetailView: View {
     private var risksView: some View {
         ScrollView {
             if let analysis = contract.analysisResult {
-                if analysis.riskItems.isEmpty {
-                    VStack(spacing: 16) {
-                        Image(systemName: "checkmark.shield.fill")
-                            .font(.system(size: 64))
-                            .foregroundColor(.green)
-                        
-                        Text("未发现明显风险")
-                            .font(.title3)
-                            .fontWeight(.medium)
-                        
-                        Text("该合同条款相对规范，未发现明显的风险条款")
-                            .font(.subheadline)
-                            .foregroundColor(.secondary)
-                            .multilineTextAlignment(.center)
-                    }
-                    .padding(.top, 60)
-                } else {
-                    LazyVStack(spacing: 16) {
-                        ForEach(analysis.riskItems) { risk in
-                            RiskCard(risk: risk)
+                VStack(spacing: 16) {
+                    if analysis.riskItems.isEmpty {
+                        VStack(spacing: 16) {
+                            Image(systemName: "checkmark.shield.fill")
+                                .font(.system(size: 64))
+                                .foregroundColor(.green)
+                            
+                            Text("未发现明显风险")
+                                .font(.title3)
+                                .fontWeight(.medium)
+                            
+                            Text("该合同条款相对规范，未发现明显的风险条款")
+                                .font(.subheadline)
+                                .foregroundColor(.secondary)
+                                .multilineTextAlignment(.center)
+                        }
+                        .padding(.top, 60)
+                    } else {
+                        LazyVStack(spacing: 16) {
+                            ForEach(analysis.riskItems) { risk in
+                                RiskCard(risk: risk)
+                            }
                         }
                     }
-                    .padding()
+                    
+                    // 免责声明
+                    disclaimerView
                 }
+                .padding()
             } else {
                 noAnalysisView
             }
         }
+    }
+    
+    // MARK: - 免责声明
+    private var disclaimerView: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            HStack(spacing: 6) {
+                Image(systemName: "info.circle")
+                    .foregroundColor(.orange)
+                Text("重要提示")
+                    .font(.caption)
+                    .fontWeight(.medium)
+                    .foregroundColor(.orange)
+            }
+            
+            Text("本分析结果由AI生成，仅供参考。AI可能无法识别所有潜在风险，不构成法律建议。签署重要合同前，建议咨询专业律师。")
+                .font(.caption)
+                .foregroundColor(.secondary)
+                .lineSpacing(3)
+        }
+        .padding()
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.orange.opacity(0.08))
+        .cornerRadius(10)
+        .padding(.top, 8)
     }
     
     // MARK: - 原文视图
