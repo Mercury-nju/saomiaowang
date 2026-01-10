@@ -36,4 +36,5 @@ struct MainTabView: View {
     MainTabView()
         .environment(ContractStore())
         .environment(UserStore())
+        .environment(SubscriptionStore())
 }

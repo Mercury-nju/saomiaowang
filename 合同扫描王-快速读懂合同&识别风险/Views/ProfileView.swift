@@ -9,8 +9,10 @@ import AuthenticationServices
 struct ProfileView: View {
     @Environment(ContractStore.self) var contractStore
     @Environment(UserStore.self) var userStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @State private var showClearAlert = false
     @State private var showLogoutAlert = false
+    @State private var showSubscription = false
     
     private let privacyPolicyURL = "https://mercury-nju.github.io/saomiaowang/privacy-policy.html"
     private let userAgreementURL = "https://mercury-nju.github.io/saomiaowang/user-agreement.html"
@@ -18,6 +20,11 @@ struct ProfileView: View {
     var body: some View {
         NavigationStack {
             List {
+                // 会员状态
+                Section {
+                    membershipCard
+                }
+                
                 // 用户信息
                 Section {
                     if userStore.isLoggedIn {
@@ -100,6 +107,64 @@ struct ProfileView: View {
             } message: {
                 Text("确定要退出登录吗？")
             }
+            .sheet(isPresented: $showSubscription) {
+                SubscriptionView()
+            }
+        }
+    }
+    
+    // MARK: - 会员卡片
+    private var membershipCard: some View {
+        Button {
+            if !subscriptionStore.isVIP {
+                showSubscription = true
+            }
+        } label: {
+            HStack(spacing: 14) {
+                ZStack {
+                    Circle()
+                        .fill(subscriptionStore.isVIP ?
+                              LinearGradient(colors: [.orange, .yellow], startPoint: .topLeading, endPoint: .bottomTrailing) :
+                              LinearGradient(colors: [.gray.opacity(0.3), .gray.opacity(0.2)], startPoint: .topLeading, endPoint: .bottomTrailing))
+                        .frame(width: 50, height: 50)
+                    
+                    Image(systemName: "crown.fill")
+                        .font(.title3)
+                        .foregroundColor(subscriptionStore.isVIP ? .white : .gray)
+                }
+                
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(subscriptionStore.isVIP ? subscriptionStore.subscriptionType.rawValue : "免费用户")
+                        .font(.headline)
+                        .foregroundColor(.primary)
+                    
+                    if subscriptionStore.isVIP {
+                        if let expDate = subscriptionStore.expirationDate {
+                            Text("有效期至 \(expDate.formatted(date: .abbreviated, time: .omitted))")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    } else {
+                        Text("剩余 \(subscriptionStore.remainingFreeUsage) 次免费体验")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                }
+                
+                Spacer()
+                
+                if !subscriptionStore.isVIP {
+                    Text("开通")
+                        .font(.subheadline)
+                        .fontWeight(.medium)
+                        .foregroundColor(.white)
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(LinearGradient(colors: [.orange, .yellow], startPoint: .leading, endPoint: .trailing))
+                        .cornerRadius(14)
+                }
+            }
+            .padding(.vertical, 4)
         }
     }
     
@@ -197,4 +262,5 @@ struct ProfileView: View {
     ProfileView()
         .environment(ContractStore())
         .environment(UserStore())
+        .environment(SubscriptionStore())
 }

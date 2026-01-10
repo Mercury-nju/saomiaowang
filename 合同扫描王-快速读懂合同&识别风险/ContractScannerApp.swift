@@ -11,12 +11,14 @@ import SwiftUI
 struct ContractScannerApp: App {
     @State private var contractStore = ContractStore()
     @State private var userStore = UserStore()
+    @State private var subscriptionStore = SubscriptionStore()
     
     var body: some Scene {
         WindowGroup {
             MainTabView()
                 .environment(contractStore)
                 .environment(userStore)
+                .environment(subscriptionStore)
         }
     }
 }

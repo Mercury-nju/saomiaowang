@@ -8,6 +8,7 @@ import PhotosUI
 
 struct HomeView: View {
     @Environment(ContractStore.self) var contractStore
+    @Environment(SubscriptionStore.self) var subscriptionStore
     @State private var showCamera = false
     @State private var showPhotoPicker = false
     @State private var showDocumentPicker = false
@@ -15,11 +16,17 @@ struct HomeView: View {
     @State private var showAnalysisView = false
     @State private var newContract: Contract?
     @State private var isProcessing = false
+    @State private var showSubscription = false
     
     var body: some View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
+                    // 会员状态提示
+                    if !subscriptionStore.isVIP {
+                        freeUserBanner
+                    }
+                    
                     // 核心扫描区域
                     scanSection
                     
@@ -44,6 +51,9 @@ struct HomeView: View {
             .sheet(isPresented: $showDocumentPicker) {
                 DocumentPickerView(selectedImages: $selectedImages)
             }
+            .sheet(isPresented: $showSubscription) {
+                SubscriptionView()
+            }
             .navigationDestination(isPresented: $showAnalysisView) {
                 if let contract = newContract {
                     ContractAnalysisView(contract: contract)
@@ -62,10 +72,50 @@ struct HomeView: View {
         }
     }
     
+    // MARK: - 免费用户提示
+    private var freeUserBanner: some View {
+        Button {
+            showSubscription = true
+        } label: {
+            HStack {
+                Image(systemName: "gift")
+                    .foregroundColor(.orange)
+                
+                if subscriptionStore.remainingFreeUsage > 0 {
+                    Text("免费体验剩余 \(subscriptionStore.remainingFreeUsage) 次")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                } else {
+                    Text("免费次数已用完")
+                        .font(.subheadline)
+                        .foregroundColor(.primary)
+                }
+                
+                Spacer()
+                
+                Text("开通会员")
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                    .foregroundColor(.orange)
+                
+                Image(systemName: "chevron.right")
+                    .font(.caption)
+                    .foregroundColor(.orange)
+            }
+            .padding()
+            .background(Color.orange.opacity(0.1))
+            .cornerRadius(10)
+        }
+    }
+    
     // MARK: - 扫描区域
     private var scanSection: some View {
         Button {
-            showCamera = true
+            if subscriptionStore.canUseApp {
+                showCamera = true
+            } else {
+                showSubscription = true
+            }
         } label: {
             VStack(spacing: 20) {
                 // 图标
@@ -103,15 +153,29 @@ struct HomeView: View {
     private var otherImportSection: some View {
         HStack(spacing: 12) {
             ImportButton(title: "相册导入", icon: "photo") {
-                showPhotoPicker = true
+                if subscriptionStore.canUseApp {
+                    showPhotoPicker = true
+                } else {
+                    showSubscription = true
+                }
             }
             
             ImportButton(title: "文件导入", icon: "folder") {
-                showDocumentPicker = true
+                if subscriptionStore.canUseApp {
+                    showDocumentPicker = true
+                } else {
+                    showSubscription = true
+                }
             }
             
             NavigationLink {
-                ContractCompareView()
+                if subscriptionStore.isVIP {
+                    ContractCompareView()
+                } else {
+                    SubscriptionPromptView(feature: "合同对比") {
+                        showSubscription = true
+                    }
+                }
             } label: {
                 ImportButtonLabel(title: "合同对比", icon: "doc.on.doc")
             }
@@ -180,6 +244,11 @@ struct HomeView: View {
     // MARK: - 处理图片
     private func processImages(_ images: [UIImage]) {
         isProcessing = true
+        
+        // 扣除免费次数
+        if !subscriptionStore.isVIP {
+            subscriptionStore.useFreeQuota()
+        }
         
         Task {
             do {
@@ -348,4 +417,49 @@ struct ProcessingOverlay: View {
 #Preview {
     HomeView()
         .environment(ContractStore())
+        .environment(SubscriptionStore())
+}
+
+// MARK: - VIP功能提示
+struct SubscriptionPromptView: View {
+    let feature: String
+    let onSubscribe: () -> Void
+    
+    var body: some View {
+        VStack(spacing: 24) {
+            Spacer()
+            
+            Image(systemName: "crown.fill")
+                .font(.system(size: 60))
+                .foregroundColor(.orange)
+            
+            Text("\(feature)为会员专属功能")
+                .font(.title3)
+                .fontWeight(.medium)
+            
+            Text("开通会员即可使用全部功能")
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Button {
+                onSubscribe()
+            } label: {
+                Text("开通会员")
+                    .font(.headline)
+                    .foregroundColor(.white)
+                    .padding()
+                    .frame(maxWidth: .infinity)
+                    .background(LinearGradient(
+                        colors: [.orange, .yellow],
+                        startPoint: .leading,
+                        endPoint: .trailing
+                    ))
+                    .cornerRadius(12)
+            }
+            .padding(.horizontal, 40)
+            
+            Spacer()
+        }
+        .navigationTitle(feature)
+    }
 }
