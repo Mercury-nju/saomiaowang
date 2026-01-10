@@ -201,7 +201,7 @@ struct ContractDetailView: View {
         HStack(spacing: 6) {
             Image(systemName: "lightbulb")
                 .foregroundColor(.blue)
-            Text("AI辅助分析，重要合同建议咨询专业律师")
+            Text("AI辅助分析仅供参考，重要合同建议咨询专业律师")
                 .font(.caption)
                 .foregroundColor(.secondary)
         }
