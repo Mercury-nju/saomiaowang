@@ -108,9 +108,7 @@ struct CameraView: View {
             Spacer()
             
             Button {
-                withAnimation {
-                    capturedImages.remove(at: index)
-                }
+                deleteImage(at: index)
             } label: {
                 Image(systemName: "trash")
                     .foregroundColor(.red)
@@ -120,6 +118,13 @@ struct CameraView: View {
         .padding()
         .background(Color(.systemBackground))
         .cornerRadius(10)
+    }
+    
+    private func deleteImage(at index: Int) {
+        guard index >= 0 && index < capturedImages.count else { return }
+        withAnimation {
+            _ = capturedImages.remove(at: index)
+        }
     }
     
     // MARK: - 底部操作栏
@@ -237,6 +242,7 @@ struct PhotoPickerView: UIViewControllerRepresentable {
         }
     }
 }
+
 
 // MARK: - 文档选择器
 struct DocumentPickerView: UIViewControllerRepresentable {
