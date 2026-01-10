@@ -272,9 +272,9 @@ struct ContractAnalysisView: View {
                 
                 // 免责声明
                 HStack(spacing: 6) {
-                    Image(systemName: "info.circle")
+                    Image(systemName: "lightbulb")
                         .font(.caption)
-                    Text("分析结果由AI生成，仅供参考，不构成法律建议")
+                    Text("AI辅助分析，重要合同建议咨询专业律师")
                         .font(.caption)
                 }
                 .foregroundColor(.secondary)

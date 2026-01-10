@@ -198,25 +198,18 @@ struct ContractDetailView: View {
     
     // MARK: - 免责声明
     private var disclaimerView: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 6) {
-                Image(systemName: "info.circle")
-                    .foregroundColor(.orange)
-                Text("重要提示")
-                    .font(.caption)
-                    .fontWeight(.medium)
-                    .foregroundColor(.orange)
-            }
-            
-            Text("本分析结果由AI生成，仅供参考。AI可能无法识别所有潜在风险，不构成法律建议。签署重要合同前，建议咨询专业律师。")
+        HStack(spacing: 6) {
+            Image(systemName: "lightbulb")
+                .foregroundColor(.blue)
+            Text("AI辅助分析，重要合同建议咨询专业律师")
                 .font(.caption)
                 .foregroundColor(.secondary)
-                .lineSpacing(3)
         }
-        .padding()
+        .padding(.vertical, 12)
+        .padding(.horizontal)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.orange.opacity(0.08))
-        .cornerRadius(10)
+        .background(Color(.systemGray6))
+        .cornerRadius(8)
         .padding(.top, 8)
     }
     
