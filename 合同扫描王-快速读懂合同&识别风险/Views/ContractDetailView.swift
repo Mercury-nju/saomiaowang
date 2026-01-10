@@ -7,13 +7,17 @@ import SwiftUI
 
 struct ContractDetailView: View {
     @Environment(ContractStore.self) var contractStore
-    @State var contract: Contract
+    let contractId: UUID
     @State private var selectedTab = 0
     @State private var showExportSheet = false
     @State private var showQAView = false
     @State private var isAnalyzing = false
     @State private var showShareSheet = false
     @State private var exportData: Data?
+    
+    private var contract: Contract {
+        contractStore.getContract(by: contractId) ?? Contract(title: "未知合同")
+    }
     
     var body: some View {
         VStack(spacing: 0) {
@@ -252,21 +256,26 @@ struct ContractDetailView: View {
         guard !contract.originalText.isEmpty else { return }
         
         isAnalyzing = true
+        let contractId = self.contractId
         
         Task {
             do {
                 let analysis = try await AIService.shared.analyzeContract(contract.originalText)
                 
                 await MainActor.run {
-                    contract.analysisResult = analysis
-                    contract.status = .completed
-                    contractStore.updateContract(contract)
+                    if var updatedContract = contractStore.getContract(by: contractId) {
+                        updatedContract.analysisResult = analysis
+                        updatedContract.status = .completed
+                        contractStore.updateContract(updatedContract)
+                    }
                     isAnalyzing = false
                 }
             } catch {
                 await MainActor.run {
-                    contract.status = .failed
-                    contractStore.updateContract(contract)
+                    if var updatedContract = contractStore.getContract(by: contractId) {
+                        updatedContract.status = .failed
+                        contractStore.updateContract(updatedContract)
+                    }
                     isAnalyzing = false
                     print("分析失败: \(error.localizedDescription)")
                 }
@@ -275,9 +284,11 @@ struct ContractDetailView: View {
     }
     
     private func reanalyze() {
-        contract.status = .analyzing
-        contract.analysisResult = nil
-        contractStore.updateContract(contract)
+        if var updatedContract = contractStore.getContract(by: contractId) {
+            updatedContract.status = .analyzing
+            updatedContract.analysisResult = nil
+            contractStore.updateContract(updatedContract)
+        }
         analyzeContract()
     }
 }
@@ -616,7 +627,7 @@ struct AnalyzingOverlay: View {
 
 #Preview {
     NavigationStack {
-        ContractDetailView(contract: Contract(title: "测试合同", originalText: "这是一份测试合同内容"))
+        ContractDetailView(contractId: UUID())
     }
     .environment(ContractStore())
 }

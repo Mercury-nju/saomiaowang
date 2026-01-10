@@ -257,7 +257,7 @@ struct ContractAnalysisView: View {
                 
                 // 查看详情按钮
                 NavigationLink {
-                    ContractDetailView(contract: contract)
+                    ContractDetailView(contractId: contract.id)
                 } label: {
                     Text("查看详细分析")
                         .font(.headline)

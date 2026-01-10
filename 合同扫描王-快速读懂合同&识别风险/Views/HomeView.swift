@@ -160,7 +160,7 @@ struct HomeView: View {
                         let currentContract = contractStore.getContract(by: contract.id) ?? contract
                         
                         NavigationLink {
-                            ContractDetailView(contract: currentContract)
+                            ContractDetailView(contractId: contract.id)
                         } label: {
                             ContractCell(contract: currentContract)
                         }

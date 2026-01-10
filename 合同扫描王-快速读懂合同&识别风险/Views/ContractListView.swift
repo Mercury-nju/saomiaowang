@@ -97,7 +97,7 @@ struct ContractListView: View {
         List {
             ForEach(filteredContracts) { contract in
                 NavigationLink {
-                    ContractDetailView(contract: contract)
+                    ContractDetailView(contractId: contract.id)
                 } label: {
                     ContractRowView(contract: contract)
                 }

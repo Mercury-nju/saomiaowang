@@ -199,9 +199,9 @@ class AIService {
         if let termsArray = json["keyTerms"] as? [[String: Any]] {
             for term in termsArray {
                 let categoryStr = term["category"] as? String ?? "other"
-                let category = TermCategory(rawValue: categoryStr) ?? .other
+                let category = parseTermCategory(categoryStr)
                 let importanceStr = term["importance"] as? String ?? "medium"
-                let importance = Importance(rawValue: importanceStr) ?? .medium
+                let importance = parseImportance(importanceStr)
                 
                 keyTerms.append(KeyTerm(
                     category: category,
@@ -245,6 +245,29 @@ class AIService {
             effectiveDate: json["effectiveDate"] as? String,
             expirationDate: json["expirationDate"] as? String
         )
+    }
+    
+    // MARK: - 解析条款类别
+    private func parseTermCategory(_ str: String) -> TermCategory {
+        switch str.lowercased() {
+        case "payment", "付款条款": return .payment
+        case "liability", "违约责任": return .liability
+        case "termination", "解除条件": return .termination
+        case "duration", "合同期限": return .duration
+        case "confidentiality", "保密条款": return .confidentiality
+        case "dispute", "争议解决": return .dispute
+        default: return .other
+        }
+    }
+    
+    // MARK: - 解析重要程度
+    private func parseImportance(_ str: String) -> Importance {
+        switch str.lowercased() {
+        case "high", "高": return .high
+        case "medium", "中": return .medium
+        case "low", "低": return .low
+        default: return .medium
+        }
     }
 }
 
