@@ -17,6 +17,8 @@ struct HomeView: View {
     @State private var newContract: Contract?
     @State private var isProcessing = false
     @State private var showSubscription = false
+    @State private var showError = false
+    @State private var errorMessage = ""
     
     var body: some View {
         NavigationStack {
@@ -68,6 +70,11 @@ struct HomeView: View {
                 if isProcessing {
                     ProcessingOverlay()
                 }
+            }
+            .alert("识别失败", isPresented: $showError) {
+                Button("确定", role: .cancel) { }
+            } message: {
+                Text(errorMessage)
             }
         }
     }
@@ -272,6 +279,9 @@ struct HomeView: View {
                 await MainActor.run {
                     isProcessing = false
                     selectedImages = []
+                    // 显示错误提示
+                    errorMessage = error.localizedDescription
+                    showError = true
                 }
             }
         }

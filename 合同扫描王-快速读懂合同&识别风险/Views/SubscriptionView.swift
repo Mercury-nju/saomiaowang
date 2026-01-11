@@ -46,8 +46,10 @@ struct SubscriptionView: View {
                 }
             }
             .onAppear {
+                // 默认选择年度会员（推荐）
                 if selectedProduct == nil {
-                    selectedProduct = subscriptionStore.products.first
+                    selectedProduct = subscriptionStore.products.first(where: { $0.id == SubscriptionStore.yearlyProductID })
+                        ?? subscriptionStore.products.first
                 }
             }
         }
