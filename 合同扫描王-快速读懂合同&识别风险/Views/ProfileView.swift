@@ -16,6 +16,7 @@ struct ProfileView: View {
     
     private let privacyPolicyURL = "https://mercury-nju.github.io/saomiaowang/privacy-policy.html"
     private let userAgreementURL = "https://mercury-nju.github.io/saomiaowang/user-agreement.html"
+    private let eulaURL = "https://mercury-nju.github.io/saomiaowang/eula.html"
     
     var body: some View {
         NavigationStack {
@@ -65,6 +66,16 @@ struct ProfileView: View {
                     Link(destination: URL(string: userAgreementURL)!) {
                         HStack {
                             Label("用户协议", systemImage: "doc.text")
+                            Spacer()
+                            Image(systemName: "arrow.up.right")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                    }
+                    
+                    Link(destination: URL(string: eulaURL)!) {
+                        HStack {
+                            Label("许可协议 (EULA)", systemImage: "doc.plaintext")
                             Spacer()
                             Image(systemName: "arrow.up.right")
                                 .font(.caption)
