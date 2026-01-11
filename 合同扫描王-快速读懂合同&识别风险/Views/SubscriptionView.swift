@@ -153,8 +153,8 @@ struct SubscriptionView: View {
             if subscriptionStore.products.isEmpty {
                 SubscriptionPlaceholder(
                     title: "月度会员",
-                    price: "首月¥9.9",
-                    subtitle: "后续¥19.9/月自动续订",
+                    price: "¥18/月",
+                    subtitle: "自动续订，可随时取消",
                     isSelected: true
                 )
                 
