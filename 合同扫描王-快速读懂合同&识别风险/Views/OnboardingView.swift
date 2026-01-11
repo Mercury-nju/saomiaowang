@@ -459,10 +459,34 @@ struct PaywallPage: View {
                     
                     // 订阅选项
                     VStack(spacing: 12) {
+                        // 显示加载状态
+                        if subscriptionStore.isLoadingProducts {
+                            HStack {
+                                ProgressView()
+                                Text("正在加载...")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                            .padding(.vertical, 8)
+                        }
+                        
+                        // 显示加载错误
+                        if let error = subscriptionStore.productLoadError {
+                            VStack(spacing: 6) {
+                                Text(error)
+                                    .font(.caption)
+                                    .foregroundColor(.orange)
+                                Button("重试") {
+                                    Task { await subscriptionStore.loadProducts() }
+                                }
+                                .font(.caption)
+                            }
+                        }
+                        
                         // 年度
                         PaywallPlanCard(
                             title: "年度会员",
-                            price: "¥128",
+                            price: subscriptionStore.products.first(where: { $0.id == SubscriptionStore.yearlyProductID })?.displayPrice ?? "¥128",
                             period: "/年",
                             subtitle: "平均每月 ¥10.7",
                             badge: "推荐",
@@ -475,7 +499,7 @@ struct PaywallPage: View {
                         // 月度
                         PaywallPlanCard(
                             title: "月度会员",
-                            price: "¥18",
+                            price: subscriptionStore.products.first(where: { $0.id == SubscriptionStore.monthlyProductID })?.displayPrice ?? "¥18",
                             period: "/月",
                             subtitle: "按月订阅，随时取消",
                             badge: nil,
@@ -496,17 +520,24 @@ struct PaywallPage: View {
                                 if subscriptionStore.isPurchasing {
                                     ProgressView().tint(.white)
                                 } else {
-                                    Text("立即开通")
+                                    Text(subscriptionStore.products.isEmpty ? "加载中..." : "立即开通")
                                         .fontWeight(.semibold)
                                 }
                             }
                             .foregroundColor(.white)
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
-                            .background(Color.blue)
+                            .background(subscriptionStore.products.isEmpty ? Color.gray : Color.blue)
                             .cornerRadius(12)
                         }
-                        .disabled(subscriptionStore.isPurchasing)
+                        .disabled(subscriptionStore.isPurchasing || subscriptionStore.products.isEmpty)
+                        
+                        // 显示购买错误
+                        if let error = subscriptionStore.purchaseError {
+                            Text(error)
+                                .font(.caption)
+                                .foregroundColor(.red)
+                        }
                     }
                     .padding(.horizontal, 20)
                     

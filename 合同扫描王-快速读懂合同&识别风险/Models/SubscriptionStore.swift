@@ -21,6 +21,8 @@ class SubscriptionStore {
     var products: [Product] = []
     var purchaseError: String?
     var isPurchasing: Bool = false
+    var isLoadingProducts: Bool = false
+    var productLoadError: String?
     
     // 产品ID（需要在App Store Connect配置）
     static let monthlyProductID = "com.contractscanner.monthly"
@@ -30,11 +32,36 @@ class SubscriptionStore {
     private let vipStatusKey = "vip_status"
     private let expirationKey = "vip_expiration"
     
+    private var transactionListener: Task<Void, Error>?
+    
     init() {
         loadLocalStatus()
+        
+        // 监听交易更新
+        transactionListener = listenForTransactions()
+        
         Task {
             await loadProducts()
             await updateSubscriptionStatus()
+        }
+    }
+    
+    deinit {
+        transactionListener?.cancel()
+    }
+    
+    // MARK: - 监听交易更新
+    private func listenForTransactions() -> Task<Void, Error> {
+        return Task.detached {
+            for await result in Transaction.updates {
+                do {
+                    let transaction = try self.checkVerified(result)
+                    await self.updateSubscriptionStatus()
+                    await transaction.finish()
+                } catch {
+                    // 交易验证失败，忽略
+                }
+            }
         }
     }
     
@@ -70,13 +97,22 @@ class SubscriptionStore {
     // MARK: - 加载产品
     @MainActor
     func loadProducts() async {
+        isLoadingProducts = true
+        productLoadError = nil
+        
         do {
             let productIDs = [Self.monthlyProductID, Self.yearlyProductID]
             products = try await Product.products(for: productIDs)
             products.sort { $0.price < $1.price }
+            
+            if products.isEmpty {
+                productLoadError = "未找到产品，请检查App Store Connect配置"
+            }
         } catch {
-            print("加载产品失败: \(error)")
+            productLoadError = "加载产品失败: \(error.localizedDescription)"
         }
+        
+        isLoadingProducts = false
     }
     
     // MARK: - 购买

@@ -141,6 +141,38 @@ struct SubscriptionView: View {
     // MARK: - 订阅选项
     private var subscriptionOptions: some View {
         VStack(spacing: 12) {
+            // 显示加载状态
+            if subscriptionStore.isLoadingProducts {
+                HStack {
+                    ProgressView()
+                    Text("正在加载订阅选项...")
+                        .font(.subheadline)
+                        .foregroundColor(.secondary)
+                }
+                .padding()
+            }
+            
+            // 显示加载错误
+            if let error = subscriptionStore.productLoadError {
+                VStack(spacing: 8) {
+                    Image(systemName: "exclamationmark.triangle")
+                        .foregroundColor(.orange)
+                    Text(error)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
+                        .multilineTextAlignment(.center)
+                    
+                    Button("重新加载") {
+                        Task {
+                            await subscriptionStore.loadProducts()
+                        }
+                    }
+                    .font(.caption)
+                }
+                .padding()
+            }
+            
+            // 显示已加载的产品
             ForEach(subscriptionStore.products, id: \.id) { product in
                 SubscriptionOptionCard(
                     product: product,
@@ -151,57 +183,70 @@ struct SubscriptionView: View {
                 }
             }
             
-            // 如果产品未加载，显示占位
-            if subscriptionStore.products.isEmpty {
-                SubscriptionPlaceholder(
-                    title: "月度会员",
-                    price: "¥18/月",
-                    subtitle: "自动续订，可随时取消",
-                    isSelected: true
-                )
-                
+            // 如果产品未加载且没有错误，显示占位
+            if subscriptionStore.products.isEmpty && !subscriptionStore.isLoadingProducts && subscriptionStore.productLoadError == nil {
                 SubscriptionPlaceholder(
                     title: "年度会员",
                     price: "¥128/年",
                     subtitle: "平均¥10.7/月，省¥110",
+                    isSelected: true
+                )
+                
+                SubscriptionPlaceholder(
+                    title: "月度会员",
+                    price: "¥18/月",
+                    subtitle: "自动续订，可随时取消",
                     isSelected: false
                 )
+                
+                Text("产品信息加载中，请稍候...")
+                    .font(.caption)
+                    .foregroundColor(.secondary)
             }
         }
     }
     
     // MARK: - 购买按钮
     private var purchaseButton: some View {
-        Button {
-            Task {
-                if let product = selectedProduct {
-                    let success = await subscriptionStore.purchase(product)
-                    if success {
-                        dismiss()
+        VStack(spacing: 8) {
+            Button {
+                Task {
+                    if let product = selectedProduct {
+                        let success = await subscriptionStore.purchase(product)
+                        if success {
+                            dismiss()
+                        }
                     }
                 }
-            }
-        } label: {
-            HStack {
-                if subscriptionStore.isPurchasing {
-                    ProgressView()
-                        .tint(.white)
-                } else {
-                    Text("立即开通")
-                        .fontWeight(.semibold)
+            } label: {
+                HStack {
+                    if subscriptionStore.isPurchasing {
+                        ProgressView()
+                            .tint(.white)
+                    } else {
+                        Text("立即开通")
+                            .fontWeight(.semibold)
+                    }
                 }
+                .frame(maxWidth: .infinity)
+                .padding()
+                .background(LinearGradient(
+                    colors: selectedProduct != nil ? [.orange, .yellow] : [.gray, .gray],
+                    startPoint: .leading,
+                    endPoint: .trailing
+                ))
+                .foregroundColor(.white)
+                .cornerRadius(12)
             }
-            .frame(maxWidth: .infinity)
-            .padding()
-            .background(LinearGradient(
-                colors: [.orange, .yellow],
-                startPoint: .leading,
-                endPoint: .trailing
-            ))
-            .foregroundColor(.white)
-            .cornerRadius(12)
+            .disabled(subscriptionStore.isPurchasing || selectedProduct == nil)
+            
+            // 显示购买错误
+            if let error = subscriptionStore.purchaseError {
+                Text(error)
+                    .font(.caption)
+                    .foregroundColor(.red)
+            }
         }
-        .disabled(subscriptionStore.isPurchasing || selectedProduct == nil)
     }
     
     // MARK: - 恢复购买

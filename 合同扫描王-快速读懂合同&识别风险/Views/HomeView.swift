@@ -24,11 +24,6 @@ struct HomeView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
-                    // 会员状态提示
-                    if !subscriptionStore.isVIP {
-                        freeUserBanner
-                    }
-                    
                     // 核心扫描区域
                     scanSection
                     
@@ -76,42 +71,6 @@ struct HomeView: View {
             } message: {
                 Text(errorMessage)
             }
-        }
-    }
-    
-    // MARK: - 免费用户提示
-    private var freeUserBanner: some View {
-        Button {
-            showSubscription = true
-        } label: {
-            HStack {
-                Image(systemName: "gift")
-                    .foregroundColor(.orange)
-                
-                if subscriptionStore.remainingFreeUsage > 0 {
-                    Text("免费体验剩余 \(subscriptionStore.remainingFreeUsage) 次")
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                } else {
-                    Text("免费次数已用完")
-                        .font(.subheadline)
-                        .foregroundColor(.primary)
-                }
-                
-                Spacer()
-                
-                Text("开通会员")
-                    .font(.subheadline)
-                    .fontWeight(.medium)
-                    .foregroundColor(.orange)
-                
-                Image(systemName: "chevron.right")
-                    .font(.caption)
-                    .foregroundColor(.orange)
-            }
-            .padding()
-            .background(Color.orange.opacity(0.1))
-            .cornerRadius(10)
         }
     }
     
