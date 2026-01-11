@@ -23,6 +23,23 @@ struct ProfileView: View {
                 // 会员状态
                 Section {
                     membershipCard
+                    
+                    // 管理订阅入口
+                    if subscriptionStore.isVIP {
+                        Button {
+                            if let url = URL(string: "https://apps.apple.com/account/subscriptions") {
+                                UIApplication.shared.open(url)
+                            }
+                        } label: {
+                            HStack {
+                                Label("管理订阅", systemImage: "creditcard")
+                                Spacer()
+                                Image(systemName: "arrow.up.right")
+                                    .font(.caption)
+                                    .foregroundColor(.secondary)
+                            }
+                        }
+                    }
                 }
                 
                 // 用户信息

@@ -525,9 +525,14 @@ struct PaywallPage: View {
                                 .foregroundColor(.secondary)
                         }
                         
-                        Text("订阅自动续期，可随时在系统设置中取消")
+                        Text("""
+确认购买后将从Apple ID账户扣款
+订阅到期前24小时自动续订
+可在"设置 > Apple ID > 订阅"中取消
+""")
                             .font(.caption2)
                             .foregroundColor(.secondary.opacity(0.8))
+                            .multilineTextAlignment(.center)
                         
                         // 隐私政策和用户协议链接
                         HStack(spacing: 4) {
@@ -572,9 +577,8 @@ struct PaywallPage: View {
         if let product = subscriptionStore.products.first(where: { $0.id == productID }) {
             let success = await subscriptionStore.purchase(product)
             if success { completeOnboarding() }
-        } else {
-            completeOnboarding()
         }
+        // 如果产品未加载，不做任何操作，用户需要等待或重试
     }
     
     private func completeOnboarding() {

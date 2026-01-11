@@ -228,7 +228,12 @@ struct SubscriptionView: View {
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
             
-            Text("• 订阅将通过您的Apple ID账户自动续订\n• 可随时在设置中取消订阅\n• 月度会员¥18/月\n• 年度会员¥128/年，平均每月仅¥10.7")
+            Text("""
+• 确认购买后，将从您的Apple ID账户扣款
+• 订阅到期前24小时内自动续订，届时将从账户扣款
+• 您可以在购买后随时前往"设置 > Apple ID > 订阅"管理或取消订阅
+• 取消订阅后，当前订阅期内仍可使用会员功能
+""")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .lineSpacing(4)
