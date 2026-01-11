@@ -312,67 +312,73 @@ struct PaywallPage: View {
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 20) {
-                // 顶部
-                VStack(spacing: 12) {
-                    // 用户数
-                    HStack(spacing: 4) {
-                        Image(systemName: "person.2.fill")
-                            .font(.caption)
-                        Text("已有 10,000+ 用户使用")
-                            .font(.caption)
+            VStack(spacing: 24) {
+                // 顶部图标和标题
+                VStack(spacing: 16) {
+                    ZStack {
+                        Circle()
+                            .fill(
+                                LinearGradient(
+                                    colors: [.blue.opacity(0.2), .purple.opacity(0.1)],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
+                            .frame(width: 80, height: 80)
+                        
+                        Image(systemName: "crown.fill")
+                            .font(.system(size: 36))
+                            .foregroundStyle(
+                                LinearGradient(
+                                    colors: [.blue, .purple],
+                                    startPoint: .topLeading,
+                                    endPoint: .bottomTrailing
+                                )
+                            )
                     }
-                    .foregroundColor(.secondary)
-                    .padding(.top, 30)
+                    .padding(.top, 40)
                     
                     Text("解锁全部功能")
-                        .font(.system(size: 28, weight: .bold))
-                    
-                    // 评分
-                    HStack(spacing: 4) {
-                        ForEach(0..<5, id: \.self) { _ in
-                            Image(systemName: "star.fill")
-                                .font(.caption)
-                                .foregroundColor(.orange)
-                        }
-                        Text("4.9")
-                            .font(.caption)
-                            .fontWeight(.medium)
-                    }
+                        .font(.system(size: 26, weight: .bold))
                 }
                 
-                // 权益
-                VStack(spacing: 14) {
-                    BenefitItem(icon: "infinity", text: "无限次合同分析", highlight: true)
-                    BenefitItem(icon: "bolt.fill", text: "AI智能风险识别", highlight: true)
-                    BenefitItem(icon: "bubble.left.and.bubble.right.fill", text: "合同问答助手", highlight: false)
-                    BenefitItem(icon: "square.and.arrow.up", text: "导出分析报告", highlight: false)
+                // 权益列表
+                VStack(spacing: 0) {
+                    PaywallBenefitRow(icon: "infinity", text: "无限次合同分析")
+                    Divider().padding(.leading, 48)
+                    PaywallBenefitRow(icon: "brain.head.profile", text: "AI智能风险识别")
+                    Divider().padding(.leading, 48)
+                    PaywallBenefitRow(icon: "bubble.left.and.bubble.right", text: "合同问答助手")
+                    Divider().padding(.leading, 48)
+                    PaywallBenefitRow(icon: "square.and.arrow.up", text: "导出分析报告")
                 }
-                .padding(.horizontal, 24)
+                .background(Color(.systemBackground))
+                .cornerRadius(12)
+                .padding(.horizontal, 20)
                 
                 // 订阅选项
-                VStack(spacing: 10) {
-                    // 年度 - 推荐
-                    SubscriptionOption(
+                VStack(spacing: 12) {
+                    // 年度
+                    PaywallPlanCard(
                         title: "年度会员",
                         price: "¥128",
                         period: "/年",
-                        originalPrice: "¥216",
-                        badge: "省¥88",
-                        subtitle: "每天仅需¥0.35",
+                        subtitle: "平均每月 ¥10.7",
+                        badge: "推荐",
+                        badgeColor: .blue,
                         isSelected: selectedPlan == "yearly"
                     ) {
                         selectedPlan = "yearly"
                     }
                     
                     // 月度
-                    SubscriptionOption(
+                    PaywallPlanCard(
                         title: "月度会员",
                         price: "¥18",
                         period: "/月",
-                        originalPrice: nil,
+                        subtitle: "按月订阅，随时取消",
                         badge: nil,
-                        subtitle: "随时取消",
+                        badgeColor: .clear,
                         isSelected: selectedPlan == "monthly"
                     ) {
                         selectedPlan = "monthly"
@@ -380,8 +386,8 @@ struct PaywallPage: View {
                 }
                 .padding(.horizontal, 20)
                 
-                // 订阅按钮
-                VStack(spacing: 12) {
+                // 按钮区域
+                VStack(spacing: 14) {
                     Button {
                         Task { await purchase() }
                     } label: {
@@ -396,18 +402,11 @@ struct PaywallPage: View {
                         .foregroundColor(.white)
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 16)
-                        .background(
-                            LinearGradient(
-                                colors: [Color.blue, Color.blue.opacity(0.85)],
-                                startPoint: .leading,
-                                endPoint: .trailing
-                            )
-                        )
-                        .cornerRadius(14)
+                        .background(Color.blue)
+                        .cornerRadius(12)
                     }
                     .disabled(subscriptionStore.isPurchasing)
                     
-                    // 免费试用
                     Button {
                         completeOnboarding()
                     } label: {
@@ -418,8 +417,8 @@ struct PaywallPage: View {
                 }
                 .padding(.horizontal, 20)
                 
-                // 底部说明
-                VStack(spacing: 8) {
+                // 底部
+                VStack(spacing: 10) {
                     Button {
                         Task {
                             await subscriptionStore.restorePurchases()
@@ -433,10 +432,13 @@ struct PaywallPage: View {
                             .foregroundColor(.secondary)
                     }
                     
-                    Text("自动续订，可随时取消 · AI分析仅供参考")
+                    Text("订阅自动续期，可随时在系统设置中取消")
                         .font(.caption2)
-                        .foregroundColor(.secondary.opacity(0.7))
-                        .multilineTextAlignment(.center)
+                        .foregroundColor(.secondary.opacity(0.8))
+                    
+                    Text("AI分析仅供参考，重要合同请咨询专业律师")
+                        .font(.caption2)
+                        .foregroundColor(.secondary.opacity(0.6))
                 }
                 .padding(.bottom, 40)
             }
@@ -463,50 +465,60 @@ struct PaywallPage: View {
     }
 }
 
-struct BenefitItem: View {
+struct PaywallBenefitRow: View {
     let icon: String
     let text: String
-    let highlight: Bool
     
     var body: some View {
         HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundColor(highlight ? .blue : .secondary)
+                .foregroundColor(.blue)
                 .frame(width: 24)
             
             Text(text)
                 .font(.body)
-                .foregroundColor(highlight ? .primary : .secondary)
             
             Spacer()
             
-            Image(systemName: "checkmark.circle.fill")
-                .font(.body)
+            Image(systemName: "checkmark")
+                .font(.caption)
+                .fontWeight(.semibold)
                 .foregroundColor(.green)
         }
+        .padding(.horizontal, 16)
+        .padding(.vertical, 14)
     }
 }
 
-struct SubscriptionOption: View {
+struct PaywallPlanCard: View {
     let title: String
     let price: String
     let period: String
-    let originalPrice: String?
-    let badge: String?
     let subtitle: String
+    let badge: String?
+    let badgeColor: Color
     let isSelected: Bool
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
-            HStack {
-                // 选中指示
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundColor(isSelected ? .blue : .gray.opacity(0.4))
+            HStack(spacing: 14) {
+                // 选中圆圈
+                ZStack {
+                    Circle()
+                        .stroke(isSelected ? Color.blue : Color.gray.opacity(0.3), lineWidth: 2)
+                        .frame(width: 22, height: 22)
+                    
+                    if isSelected {
+                        Circle()
+                            .fill(Color.blue)
+                            .frame(width: 12, height: 12)
+                    }
+                }
                 
-                VStack(alignment: .leading, spacing: 2) {
+                // 标题和副标题
+                VStack(alignment: .leading, spacing: 3) {
                     HStack(spacing: 8) {
                         Text(title)
                             .font(.headline)
@@ -515,11 +527,11 @@ struct SubscriptionOption: View {
                         if let badge = badge {
                             Text(badge)
                                 .font(.caption2)
-                                .fontWeight(.bold)
+                                .fontWeight(.medium)
                                 .foregroundColor(.white)
                                 .padding(.horizontal, 6)
                                 .padding(.vertical, 2)
-                                .background(Color.red)
+                                .background(badgeColor)
                                 .cornerRadius(4)
                         }
                     }
@@ -531,23 +543,15 @@ struct SubscriptionOption: View {
                 
                 Spacer()
                 
-                VStack(alignment: .trailing, spacing: 2) {
-                    HStack(alignment: .firstTextBaseline, spacing: 2) {
-                        Text(price)
-                            .font(.title3)
-                            .fontWeight(.bold)
-                            .foregroundColor(.primary)
-                        Text(period)
-                            .font(.caption)
-                            .foregroundColor(.secondary)
-                    }
-                    
-                    if let original = originalPrice {
-                        Text(original)
-                            .font(.caption)
-                            .strikethrough()
-                            .foregroundColor(.secondary)
-                    }
+                // 价格
+                HStack(alignment: .firstTextBaseline, spacing: 1) {
+                    Text(price)
+                        .font(.title3)
+                        .fontWeight(.bold)
+                        .foregroundColor(.primary)
+                    Text(period)
+                        .font(.caption)
+                        .foregroundColor(.secondary)
                 }
             }
             .padding(16)
@@ -555,7 +559,7 @@ struct SubscriptionOption: View {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
+                    .stroke(isSelected ? Color.blue : Color.gray.opacity(0.15), lineWidth: isSelected ? 2 : 1)
             )
         }
     }
