@@ -226,7 +226,7 @@ struct SubscriptionView: View {
                 .fontWeight(.medium)
                 .foregroundColor(.secondary)
             
-            Text("• 订阅将通过您的Apple ID账户自动续订\n• 可随时在设置中取消订阅\n• 月度会员首月优惠价¥9.9，后续¥19.9/月\n• 年度会员¥128/年，平均每月仅¥10.7")
+            Text("• 订阅将通过您的Apple ID账户自动续订\n• 可随时在设置中取消订阅\n• 月度会员¥18/月\n• 年度会员¥128/年，平均每月仅¥10.7")
                 .font(.caption)
                 .foregroundColor(.secondary)
                 .lineSpacing(4)
@@ -266,7 +266,7 @@ struct SubscriptionOptionCard: View {
                         }
                     }
                     
-                    Text(isMonthly ? "首月¥9.9，后续¥19.9/月" : "¥128/年，平均¥10.7/月")
+                    Text(isMonthly ? "¥18/月" : "¥128/年，平均¥10.7/月")
                         .font(.caption)
                         .foregroundColor(.secondary)
                 }
