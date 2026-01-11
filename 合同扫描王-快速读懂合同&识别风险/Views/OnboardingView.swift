@@ -311,139 +311,158 @@ struct PaywallPage: View {
     @State private var selectedPlan: String = "yearly"
     
     var body: some View {
-        ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                // 顶部图标和标题
-                VStack(spacing: 16) {
-                    ZStack {
-                        Circle()
-                            .fill(
-                                LinearGradient(
-                                    colors: [.blue.opacity(0.2), .purple.opacity(0.1)],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
+        ZStack(alignment: .topTrailing) {
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 24) {
+                    // 顶部图标和标题
+                    VStack(spacing: 16) {
+                        ZStack {
+                            Circle()
+                                .fill(
+                                    LinearGradient(
+                                        colors: [.blue.opacity(0.2), .purple.opacity(0.1)],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
                                 )
-                            )
-                            .frame(width: 80, height: 80)
+                                .frame(width: 80, height: 80)
+                            
+                            Image(systemName: "crown.fill")
+                                .font(.system(size: 36))
+                                .foregroundStyle(
+                                    LinearGradient(
+                                        colors: [.blue, .purple],
+                                        startPoint: .topLeading,
+                                        endPoint: .bottomTrailing
+                                    )
+                                )
+                        }
+                        .padding(.top, 50)
                         
-                        Image(systemName: "crown.fill")
-                            .font(.system(size: 36))
-                            .foregroundStyle(
-                                LinearGradient(
-                                    colors: [.blue, .purple],
-                                    startPoint: .topLeading,
-                                    endPoint: .bottomTrailing
-                                )
-                            )
-                    }
-                    .padding(.top, 40)
-                    
-                    Text("解锁全部功能")
-                        .font(.system(size: 26, weight: .bold))
-                }
-                
-                // 权益列表
-                VStack(spacing: 0) {
-                    PaywallBenefitRow(icon: "infinity", text: "无限次合同分析")
-                    Divider().padding(.leading, 48)
-                    PaywallBenefitRow(icon: "brain.head.profile", text: "AI智能风险识别")
-                    Divider().padding(.leading, 48)
-                    PaywallBenefitRow(icon: "bubble.left.and.bubble.right", text: "合同问答助手")
-                    Divider().padding(.leading, 48)
-                    PaywallBenefitRow(icon: "square.and.arrow.up", text: "导出分析报告")
-                }
-                .background(Color(.systemBackground))
-                .cornerRadius(12)
-                .padding(.horizontal, 20)
-                
-                // 订阅选项
-                VStack(spacing: 12) {
-                    // 年度
-                    PaywallPlanCard(
-                        title: "年度会员",
-                        price: "¥128",
-                        period: "/年",
-                        subtitle: "平均每月 ¥10.7",
-                        badge: "推荐",
-                        badgeColor: .blue,
-                        isSelected: selectedPlan == "yearly"
-                    ) {
-                        selectedPlan = "yearly"
+                        Text("解锁全部功能")
+                            .font(.system(size: 26, weight: .bold))
                     }
                     
-                    // 月度
-                    PaywallPlanCard(
-                        title: "月度会员",
-                        price: "¥18",
-                        period: "/月",
-                        subtitle: "按月订阅，随时取消",
-                        badge: nil,
-                        badgeColor: .clear,
-                        isSelected: selectedPlan == "monthly"
-                    ) {
-                        selectedPlan = "monthly"
+                    // 权益列表
+                    VStack(spacing: 0) {
+                        PaywallBenefitRow(icon: "infinity", text: "无限次合同分析")
+                        Divider().padding(.leading, 48)
+                        PaywallBenefitRow(icon: "brain.head.profile", text: "AI智能风险识别")
+                        Divider().padding(.leading, 48)
+                        PaywallBenefitRow(icon: "bubble.left.and.bubble.right", text: "合同问答助手")
+                        Divider().padding(.leading, 48)
+                        PaywallBenefitRow(icon: "square.and.arrow.up", text: "导出分析报告")
                     }
-                }
-                .padding(.horizontal, 20)
-                
-                // 按钮区域
-                VStack(spacing: 14) {
-                    Button {
-                        Task { await purchase() }
-                    } label: {
-                        HStack {
-                            if subscriptionStore.isPurchasing {
-                                ProgressView().tint(.white)
-                            } else {
-                                Text("立即开通")
-                                    .fontWeight(.semibold)
-                            }
+                    .background(Color(.systemBackground))
+                    .cornerRadius(12)
+                    .padding(.horizontal, 20)
+                    
+                    // 订阅选项
+                    VStack(spacing: 12) {
+                        // 年度
+                        PaywallPlanCard(
+                            title: "年度会员",
+                            price: "¥128",
+                            period: "/年",
+                            subtitle: "平均每月 ¥10.7",
+                            badge: "推荐",
+                            badgeColor: .blue,
+                            isSelected: selectedPlan == "yearly"
+                        ) {
+                            selectedPlan = "yearly"
                         }
-                        .foregroundColor(.white)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
-                        .background(Color.blue)
-                        .cornerRadius(12)
-                    }
-                    .disabled(subscriptionStore.isPurchasing)
-                    
-                    Button {
-                        completeOnboarding()
-                    } label: {
-                        Text("先免费体验1次")
-                            .font(.subheadline)
-                            .foregroundColor(.blue)
-                    }
-                }
-                .padding(.horizontal, 20)
-                
-                // 底部
-                VStack(spacing: 10) {
-                    Button {
-                        Task {
-                            await subscriptionStore.restorePurchases()
-                            if subscriptionStore.isVIP {
-                                completeOnboarding()
-                            }
+                        
+                        // 月度
+                        PaywallPlanCard(
+                            title: "月度会员",
+                            price: "¥18",
+                            period: "/月",
+                            subtitle: "按月订阅，随时取消",
+                            badge: nil,
+                            badgeColor: .clear,
+                            isSelected: selectedPlan == "monthly"
+                        ) {
+                            selectedPlan = "monthly"
                         }
-                    } label: {
-                        Text("恢复购买")
-                            .font(.caption)
-                            .foregroundColor(.secondary)
                     }
+                    .padding(.horizontal, 20)
                     
-                    Text("订阅自动续期，可随时在系统设置中取消")
-                        .font(.caption2)
-                        .foregroundColor(.secondary.opacity(0.8))
+                    // 按钮区域
+                    VStack(spacing: 14) {
+                        Button {
+                            Task { await purchase() }
+                        } label: {
+                            HStack {
+                                if subscriptionStore.isPurchasing {
+                                    ProgressView().tint(.white)
+                                } else {
+                                    Text("立即开通")
+                                        .fontWeight(.semibold)
+                                }
+                            }
+                            .foregroundColor(.white)
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 16)
+                            .background(Color.blue)
+                            .cornerRadius(12)
+                        }
+                        .disabled(subscriptionStore.isPurchasing)
+                        
+                        Button {
+                            completeOnboarding()
+                        } label: {
+                            Text("先免费体验1次")
+                                .font(.body)
+                                .fontWeight(.medium)
+                                .foregroundColor(.secondary)
+                                .padding(.vertical, 8)
+                        }
+                    }
+                    .padding(.horizontal, 20)
                     
-                    Text("AI分析仅供参考，重要合同请咨询专业律师")
-                        .font(.caption2)
-                        .foregroundColor(.secondary.opacity(0.6))
+                    // 底部
+                    VStack(spacing: 10) {
+                        Button {
+                            Task {
+                                await subscriptionStore.restorePurchases()
+                                if subscriptionStore.isVIP {
+                                    completeOnboarding()
+                                }
+                            }
+                        } label: {
+                            Text("恢复购买")
+                                .font(.caption)
+                                .foregroundColor(.secondary)
+                        }
+                        
+                        Text("订阅自动续期，可随时在系统设置中取消")
+                            .font(.caption2)
+                            .foregroundColor(.secondary.opacity(0.8))
+                        
+                        Text("AI分析仅供参考，重要合同请咨询专业律师")
+                            .font(.caption2)
+                            .foregroundColor(.secondary.opacity(0.6))
+                    }
+                    .padding(.bottom, 40)
                 }
-                .padding(.bottom, 40)
             }
+            .background(Color(.systemGroupedBackground))
+            
+            // 关闭按钮
+            Button {
+                completeOnboarding()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.body)
+                    .fontWeight(.medium)
+                    .foregroundColor(.secondary)
+                    .padding(10)
+                    .background(Color(.systemGray5))
+                    .clipShape(Circle())
+            }
+            .padding(.top, 16)
+            .padding(.trailing, 20)
         }
-        .background(Color(.systemGroupedBackground))
     }
     
     private func purchase() async {
