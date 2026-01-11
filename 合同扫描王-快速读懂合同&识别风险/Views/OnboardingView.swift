@@ -32,16 +32,20 @@ struct OnboardingView: View {
                     FeaturePage()
                         .tag(1)
                     
-                    // 第三页：付费页
+                    // 第三页：模拟报告展示
+                    ReportPreviewPage()
+                        .tag(2)
+                    
+                    // 第四页：付费页
                     PaywallPage(
                         hasCompletedOnboarding: $hasCompletedOnboarding
                     )
-                    .tag(2)
+                    .tag(3)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
                 
                 // 底部（非付费页显示）
-                if currentPage < 2 {
+                if currentPage < 3 {
                     bottomSection
                 }
             }
@@ -53,7 +57,7 @@ struct OnboardingView: View {
         VStack(spacing: 16) {
             // 页面指示器
             HStack(spacing: 8) {
-                ForEach(0..<3, id: \.self) { index in
+                ForEach(0..<4, id: \.self) { index in
                     Capsule()
                         .fill(currentPage == index ? Color.blue : Color.gray.opacity(0.3))
                         .frame(width: currentPage == index ? 24 : 8, height: 8)
@@ -165,6 +169,165 @@ struct FeaturePage: View {
             }
             
             Spacer()
+            Spacer()
+        }
+    }
+}
+
+// MARK: - 模拟报告展示页
+struct ReportPreviewPage: View {
+    var body: some View {
+        VStack(spacing: 0) {
+            // 标题
+            VStack(spacing: 8) {
+                Text("分析报告示例")
+                    .font(.system(size: 24, weight: .bold))
+                
+                Text("AI将为您生成这样的分析报告")
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            .padding(.top, 40)
+            .padding(.bottom, 20)
+            
+            // 模拟报告卡片
+            ScrollView(showsIndicators: false) {
+                VStack(spacing: 16) {
+                    // 合同摘要
+                    MockReportCard(title: "合同摘要", icon: "doc.text") {
+                        VStack(alignment: .leading, spacing: 8) {
+                            MockInfoRow(label: "合同类型", value: "房屋租赁合同")
+                            MockInfoRow(label: "合同双方", value: "甲方（出租方）、乙方（承租方）")
+                            MockInfoRow(label: "租赁期限", value: "2026年2月1日 - 2027年1月31日")
+                            MockInfoRow(label: "月租金", value: "¥5,000")
+                        }
+                    }
+                    
+                    // 关键条款
+                    MockReportCard(title: "关键条款", icon: "list.bullet.clipboard") {
+                        VStack(spacing: 12) {
+                            MockClauseRow(category: "付款条款", content: "每月1日前支付当月租金")
+                            MockClauseRow(category: "押金条款", content: "押二付一，共计¥15,000")
+                            MockClauseRow(category: "解约条款", content: "提前30天书面通知可解约")
+                        }
+                    }
+                    
+                    // 风险提示
+                    MockReportCard(title: "风险提示", icon: "exclamationmark.triangle") {
+                        VStack(spacing: 12) {
+                            MockRiskRow(
+                                level: "高",
+                                levelColor: .red,
+                                title: "违约金过高",
+                                description: "提前解约需支付3个月租金作为违约金"
+                            )
+                            MockRiskRow(
+                                level: "中",
+                                levelColor: .orange,
+                                title: "维修责任不明",
+                                description: "未明确约定房屋维修费用承担方"
+                            )
+                        }
+                    }
+                }
+                .padding(.horizontal, 20)
+                .padding(.bottom, 120)
+            }
+        }
+    }
+}
+
+// MARK: - 模拟报告卡片
+struct MockReportCard<Content: View>: View {
+    let title: String
+    let icon: String
+    @ViewBuilder let content: Content
+    
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            HStack(spacing: 8) {
+                Image(systemName: icon)
+                    .foregroundColor(.blue)
+                Text(title)
+                    .font(.headline)
+            }
+            
+            content
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .padding(16)
+        .background(Color(.systemBackground))
+        .cornerRadius(12)
+        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+    }
+}
+
+struct MockInfoRow: View {
+    let label: String
+    let value: String
+    
+    var body: some View {
+        HStack {
+            Text(label)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            Spacer()
+            Text(value)
+                .font(.subheadline)
+                .fontWeight(.medium)
+        }
+    }
+}
+
+struct MockClauseRow: View {
+    let category: String
+    let content: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(category)
+                .font(.caption)
+                .foregroundColor(.blue)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.blue.opacity(0.1))
+                .cornerRadius(4)
+            
+            Text(content)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+            
+            Spacer()
+        }
+    }
+}
+
+struct MockRiskRow: View {
+    let level: String
+    let levelColor: Color
+    let title: String
+    let description: String
+    
+    var body: some View {
+        HStack(alignment: .top, spacing: 12) {
+            Text(level)
+                .font(.caption)
+                .fontWeight(.bold)
+                .foregroundColor(.white)
+                .frame(width: 24, height: 24)
+                .background(levelColor)
+                .cornerRadius(4)
+            
+            VStack(alignment: .leading, spacing: 4) {
+                Text(title)
+                    .font(.subheadline)
+                    .fontWeight(.medium)
+                
+                Text(description)
+                    .font(.caption)
+                    .foregroundColor(.secondary)
+            }
+            
             Spacer()
         }
     }
