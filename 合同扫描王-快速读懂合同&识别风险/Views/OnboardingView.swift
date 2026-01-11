@@ -407,16 +407,6 @@ struct PaywallPage: View {
                             .cornerRadius(12)
                         }
                         .disabled(subscriptionStore.isPurchasing)
-                        
-                        Button {
-                            completeOnboarding()
-                        } label: {
-                            Text("先免费体验1次")
-                                .font(.body)
-                                .fontWeight(.medium)
-                                .foregroundColor(.secondary)
-                                .padding(.vertical, 8)
-                        }
                     }
                     .padding(.horizontal, 20)
                     
