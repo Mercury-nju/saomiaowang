@@ -23,6 +23,7 @@ struct ContractScannerApp: App {
                     .environment(subscriptionStore)
             } else {
                 OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+                    .environment(subscriptionStore)
             }
         }
     }
