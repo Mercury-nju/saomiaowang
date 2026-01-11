@@ -13,61 +13,46 @@ struct OnboardingView: View {
     
     var body: some View {
         ZStack {
-            // 背景渐变
-            LinearGradient(
-                colors: [Color.blue.opacity(0.05), Color.white],
-                startPoint: .top,
-                endPoint: .bottom
-            )
-            .ignoresSafeArea()
+            // 背景
+            Color(.systemBackground)
+                .ignoresSafeArea()
             
             VStack(spacing: 0) {
                 // 页面内容
                 TabView(selection: $currentPage) {
-                    // 第一页：欢迎
-                    WelcomePage()
+                    PainPointPage()
                         .tag(0)
                     
-                    // 第二页：核心功能
-                    FeaturePage()
+                    SolutionPage()
                         .tag(1)
                     
-                    // 第三页：模拟报告展示
-                    ReportPreviewPage()
+                    PaywallPage(hasCompletedOnboarding: $hasCompletedOnboarding)
                         .tag(2)
-                    
-                    // 第四页：付费页
-                    PaywallPage(
-                        hasCompletedOnboarding: $hasCompletedOnboarding
-                    )
-                    .tag(3)
                 }
                 .tabViewStyle(.page(indexDisplayMode: .never))
+                .animation(.easeInOut(duration: 0.3), value: currentPage)
                 
-                // 底部（非付费页显示）
-                if currentPage < 3 {
+                // 底部（非付费页）
+                if currentPage < 2 {
                     bottomSection
                 }
             }
         }
     }
     
-    // MARK: - 底部区域
     private var bottomSection: some View {
-        VStack(spacing: 16) {
+        VStack(spacing: 20) {
             // 页面指示器
             HStack(spacing: 8) {
-                ForEach(0..<4, id: \.self) { index in
+                ForEach(0..<3, id: \.self) { index in
                     Capsule()
                         .fill(currentPage == index ? Color.blue : Color.gray.opacity(0.3))
                         .frame(width: currentPage == index ? 24 : 8, height: 8)
-                        .animation(.easeInOut(duration: 0.2), value: currentPage)
                 }
             }
             
-            // 继续按钮
             Button {
-                withAnimation(.easeInOut(duration: 0.3)) {
+                withAnimation {
                     currentPage += 1
                 }
             } label: {
@@ -80,93 +65,47 @@ struct OnboardingView: View {
                     .cornerRadius(14)
             }
             .padding(.horizontal, 24)
-            .padding(.bottom, 40)
+            .padding(.bottom, 50)
         }
     }
 }
 
-// MARK: - 欢迎页
-struct WelcomePage: View {
+// MARK: - 第一页：痛点
+struct PainPointPage: View {
     var body: some View {
         VStack(spacing: 0) {
             Spacer()
             
-            // Logo区域
-            VStack(spacing: 24) {
-                ZStack {
-                    Circle()
-                        .fill(Color.blue.opacity(0.1))
-                        .frame(width: 140, height: 140)
-                    
-                    Image(systemName: "doc.text.magnifyingglass")
-                        .font(.system(size: 60))
-                        .foregroundColor(.blue)
-                }
+            // 图标
+            ZStack {
+                Circle()
+                    .fill(Color.red.opacity(0.1))
+                    .frame(width: 120, height: 120)
                 
-                VStack(spacing: 12) {
-                    Text("合同扫描王")
-                        .font(.system(size: 32, weight: .bold))
-                    
-                    Text("快速读懂合同 · 识别潜在风险")
-                        .font(.title3)
-                        .foregroundColor(.secondary)
-                }
+                Image(systemName: "doc.text.magnifyingglass")
+                    .font(.system(size: 50))
+                    .foregroundColor(.red.opacity(0.8))
             }
+            .padding(.bottom, 32)
             
-            Spacer()
-            
-            // 特点列表
+            // 痛点文案
             VStack(spacing: 16) {
-                FeatureRow(icon: "camera.fill", text: "拍照即可识别合同内容")
-                FeatureRow(icon: "brain", text: "AI智能分析关键条款")
-                FeatureRow(icon: "shield.checkerboard", text: "快速识别明显风险点")
-            }
-            .padding(.horizontal, 32)
-            
-            Spacer()
-            Spacer()
-        }
-    }
-}
-
-// MARK: - 功能页
-struct FeaturePage: View {
-    var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
-            
-            // 功能展示
-            VStack(spacing: 40) {
-                Text("三步读懂合同")
-                    .font(.system(size: 28, weight: .bold))
+                Text("看不懂合同？")
+                    .font(.system(size: 32, weight: .bold))
                 
-                VStack(spacing: 24) {
-                    StepCard(
-                        step: "1",
-                        icon: "camera.viewfinder",
-                        title: "扫描合同",
-                        description: "拍照或上传合同文件",
-                        color: .blue
-                    )
-                    
-                    StepCard(
-                        step: "2",
-                        icon: "sparkles",
-                        title: "AI分析",
-                        description: "智能提取关键条款和风险",
-                        color: .purple
-                    )
-                    
-                    StepCard(
-                        step: "3",
-                        icon: "checkmark.shield",
-                        title: "获取报告",
-                        description: "清晰了解合同重点内容",
-                        color: .green
-                    )
-                }
-                .padding(.horizontal, 24)
+                Text("担心签了才发现有坑？")
+                    .font(.system(size: 32, weight: .bold))
             }
+            
+            Spacer()
+            
+            // 痛点列表
+            VStack(alignment: .leading, spacing: 16) {
+                PainPointRow(icon: "clock", text: "合同太长，没时间细看")
+                PainPointRow(icon: "questionmark.circle", text: "专业术语多，看不懂")
+                PainPointRow(icon: "exclamationmark.triangle", text: "隐藏条款，容易踩坑")
+            }
+            .padding(.horizontal, 40)
             
             Spacer()
             Spacer()
@@ -174,59 +113,108 @@ struct FeaturePage: View {
     }
 }
 
-// MARK: - 模拟报告展示页
-struct ReportPreviewPage: View {
+struct PainPointRow: View {
+    let icon: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 16) {
+            Image(systemName: icon)
+                .font(.title3)
+                .foregroundColor(.red.opacity(0.7))
+                .frame(width: 28)
+            
+            Text(text)
+                .font(.body)
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+// MARK: - 第二页：解决方案 + 报告预览
+struct SolutionPage: View {
     var body: some View {
         VStack(spacing: 0) {
             // 标题
             VStack(spacing: 8) {
-                Text("分析报告示例")
-                    .font(.system(size: 24, weight: .bold))
+                Text("AI帮你3秒读懂合同")
+                    .font(.system(size: 26, weight: .bold))
                 
-                Text("AI将为您生成这样的分析报告")
-                    .font(.subheadline)
+                Text("识别风险，避免踩坑")
+                    .font(.body)
                     .foregroundColor(.secondary)
             }
-            .padding(.top, 40)
-            .padding(.bottom, 20)
+            .padding(.top, 50)
+            .padding(.bottom, 24)
             
-            // 模拟报告卡片
+            // 模拟报告
             ScrollView(showsIndicators: false) {
-                VStack(spacing: 16) {
-                    // 合同摘要
-                    MockReportCard(title: "合同摘要", icon: "doc.text") {
-                        VStack(alignment: .leading, spacing: 8) {
-                            MockInfoRow(label: "合同类型", value: "房屋租赁合同")
-                            MockInfoRow(label: "合同双方", value: "甲方（出租方）、乙方（承租方）")
-                            MockInfoRow(label: "租赁期限", value: "2026年2月1日 - 2027年1月31日")
-                            MockInfoRow(label: "月租金", value: "¥5,000")
-                        }
-                    }
-                    
-                    // 关键条款
-                    MockReportCard(title: "关键条款", icon: "list.bullet.clipboard") {
-                        VStack(spacing: 12) {
-                            MockClauseRow(category: "付款条款", content: "每月1日前支付当月租金")
-                            MockClauseRow(category: "押金条款", content: "押二付一，共计¥15,000")
-                            MockClauseRow(category: "解约条款", content: "提前30天书面通知可解约")
+                VStack(spacing: 14) {
+                    // 合同信息
+                    DemoCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Image(systemName: "doc.text.fill")
+                                    .foregroundColor(.blue)
+                                Text("房屋租赁合同")
+                                    .font(.headline)
+                                Spacer()
+                                Text("已分析")
+                                    .font(.caption)
+                                    .foregroundColor(.green)
+                            }
+                            
+                            Divider()
+                            
+                            DemoInfoRow(label: "租期", value: "12个月")
+                            DemoInfoRow(label: "月租", value: "¥5,000")
+                            DemoInfoRow(label: "押金", value: "¥10,000")
                         }
                     }
                     
                     // 风险提示
-                    MockReportCard(title: "风险提示", icon: "exclamationmark.triangle") {
-                        VStack(spacing: 12) {
-                            MockRiskRow(
+                    DemoCard {
+                        VStack(alignment: .leading, spacing: 12) {
+                            HStack {
+                                Image(systemName: "exclamationmark.shield.fill")
+                                    .foregroundColor(.orange)
+                                Text("发现 2 个风险")
+                                    .font(.headline)
+                            }
+                            
+                            Divider()
+                            
+                            DemoRiskItem(
                                 level: "高",
-                                levelColor: .red,
+                                color: .red,
                                 title: "违约金过高",
-                                description: "提前解约需支付3个月租金作为违约金"
+                                desc: "提前退租需付3个月租金"
                             )
-                            MockRiskRow(
+                            
+                            DemoRiskItem(
                                 level: "中",
-                                levelColor: .orange,
-                                title: "维修责任不明",
-                                description: "未明确约定房屋维修费用承担方"
+                                color: .orange,
+                                title: "押金退还条款模糊",
+                                desc: "未明确退还时间和条件"
                             )
+                        }
+                    }
+                    
+                    // 关键条款
+                    DemoCard {
+                        VStack(alignment: .leading, spacing: 10) {
+                            HStack {
+                                Image(systemName: "list.bullet.rectangle.fill")
+                                    .foregroundColor(.purple)
+                                Text("关键条款")
+                                    .font(.headline)
+                            }
+                            
+                            Divider()
+                            
+                            DemoClauseItem(tag: "付款", text: "每月1日前付款")
+                            DemoClauseItem(tag: "维修", text: "500元以下租客承担")
+                            DemoClauseItem(tag: "转租", text: "禁止转租")
                         }
                     }
                 }
@@ -237,32 +225,20 @@ struct ReportPreviewPage: View {
     }
 }
 
-// MARK: - 模拟报告卡片
-struct MockReportCard<Content: View>: View {
-    let title: String
-    let icon: String
+struct DemoCard<Content: View>: View {
     @ViewBuilder let content: Content
     
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack(spacing: 8) {
-                Image(systemName: icon)
-                    .foregroundColor(.blue)
-                Text(title)
-                    .font(.headline)
-            }
-            
-            content
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .padding(16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
+        content
+            .padding(16)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color(.systemBackground))
+            .cornerRadius(12)
+            .shadow(color: .black.opacity(0.06), radius: 10, x: 0, y: 4)
     }
 }
 
-struct MockInfoRow: View {
+struct DemoInfoRow: View {
     let label: String
     let value: String
     
@@ -279,61 +255,56 @@ struct MockInfoRow: View {
     }
 }
 
-struct MockClauseRow: View {
-    let category: String
-    let content: String
-    
-    var body: some View {
-        HStack(alignment: .top, spacing: 12) {
-            Text(category)
-                .font(.caption)
-                .foregroundColor(.blue)
-                .padding(.horizontal, 8)
-                .padding(.vertical, 4)
-                .background(Color.blue.opacity(0.1))
-                .cornerRadius(4)
-            
-            Text(content)
-                .font(.subheadline)
-                .foregroundColor(.secondary)
-            
-            Spacer()
-        }
-    }
-}
-
-struct MockRiskRow: View {
+struct DemoRiskItem: View {
     let level: String
-    let levelColor: Color
+    let color: Color
     let title: String
-    let description: String
+    let desc: String
     
     var body: some View {
         HStack(alignment: .top, spacing: 12) {
             Text(level)
-                .font(.caption)
+                .font(.caption2)
                 .fontWeight(.bold)
                 .foregroundColor(.white)
-                .frame(width: 24, height: 24)
-                .background(levelColor)
+                .frame(width: 20, height: 20)
+                .background(color)
                 .cornerRadius(4)
             
-            VStack(alignment: .leading, spacing: 4) {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(title)
                     .font(.subheadline)
                     .fontWeight(.medium)
-                
-                Text(description)
+                Text(desc)
                     .font(.caption)
                     .foregroundColor(.secondary)
             }
-            
-            Spacer()
         }
     }
 }
 
-// MARK: - 付费页
+struct DemoClauseItem: View {
+    let tag: String
+    let text: String
+    
+    var body: some View {
+        HStack(spacing: 10) {
+            Text(tag)
+                .font(.caption)
+                .foregroundColor(.purple)
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(Color.purple.opacity(0.1))
+                .cornerRadius(4)
+            
+            Text(text)
+                .font(.subheadline)
+                .foregroundColor(.secondary)
+        }
+    }
+}
+
+// MARK: - 第三页：付费页
 struct PaywallPage: View {
     @Environment(SubscriptionStore.self) var subscriptionStore
     @Binding var hasCompletedOnboarding: Bool
@@ -341,134 +312,147 @@ struct PaywallPage: View {
     
     var body: some View {
         ScrollView(showsIndicators: false) {
-            VStack(spacing: 24) {
-                // 标题
-                VStack(spacing: 8) {
+            VStack(spacing: 20) {
+                // 顶部
+                VStack(spacing: 12) {
+                    // 用户数
+                    HStack(spacing: 4) {
+                        Image(systemName: "person.2.fill")
+                            .font(.caption)
+                        Text("已有 10,000+ 用户使用")
+                            .font(.caption)
+                    }
+                    .foregroundColor(.secondary)
+                    .padding(.top, 30)
+                    
                     Text("解锁全部功能")
                         .font(.system(size: 28, weight: .bold))
                     
-                    Text("无限次分析合同，识别风险")
-                        .font(.body)
-                        .foregroundColor(.secondary)
+                    // 评分
+                    HStack(spacing: 4) {
+                        ForEach(0..<5, id: \.self) { _ in
+                            Image(systemName: "star.fill")
+                                .font(.caption)
+                                .foregroundColor(.orange)
+                        }
+                        Text("4.9")
+                            .font(.caption)
+                            .fontWeight(.medium)
+                    }
                 }
-                .padding(.top, 40)
                 
                 // 权益
-                VStack(spacing: 12) {
-                    BenefitRow(icon: "infinity", text: "无限次合同分析")
-                    BenefitRow(icon: "brain.head.profile", text: "AI智能问答")
-                    BenefitRow(icon: "doc.on.doc", text: "合同对比功能")
-                    BenefitRow(icon: "square.and.arrow.up", text: "导出分析报告")
+                VStack(spacing: 14) {
+                    BenefitItem(icon: "infinity", text: "无限次合同分析", highlight: true)
+                    BenefitItem(icon: "bolt.fill", text: "AI智能风险识别", highlight: true)
+                    BenefitItem(icon: "bubble.left.and.bubble.right.fill", text: "合同问答助手", highlight: false)
+                    BenefitItem(icon: "square.and.arrow.up", text: "导出分析报告", highlight: false)
                 }
-                .padding(.horizontal, 32)
+                .padding(.horizontal, 24)
                 
                 // 订阅选项
-                VStack(spacing: 12) {
-                    // 年度
-                    PlanCard(
+                VStack(spacing: 10) {
+                    // 年度 - 推荐
+                    SubscriptionOption(
                         title: "年度会员",
                         price: "¥128",
                         period: "/年",
-                        subtitle: "平均每月仅¥10.7",
-                        isSelected: selectedPlan == "yearly",
-                        badge: "推荐"
+                        originalPrice: "¥216",
+                        badge: "省¥88",
+                        subtitle: "每天仅需¥0.35",
+                        isSelected: selectedPlan == "yearly"
                     ) {
                         selectedPlan = "yearly"
                     }
                     
                     // 月度
-                    PlanCard(
+                    SubscriptionOption(
                         title: "月度会员",
                         price: "¥18",
                         period: "/月",
+                        originalPrice: nil,
+                        badge: nil,
                         subtitle: "随时取消",
-                        isSelected: selectedPlan == "monthly",
-                        badge: nil
+                        isSelected: selectedPlan == "monthly"
                     ) {
                         selectedPlan = "monthly"
                     }
                 }
-                .padding(.horizontal, 24)
+                .padding(.horizontal, 20)
                 
                 // 订阅按钮
-                Button {
-                    Task {
-                        await purchase()
-                    }
-                } label: {
-                    HStack {
-                        if subscriptionStore.isPurchasing {
-                            ProgressView()
-                                .tint(.white)
-                        } else {
-                            Text("立即订阅")
-                                .fontWeight(.semibold)
+                VStack(spacing: 12) {
+                    Button {
+                        Task { await purchase() }
+                    } label: {
+                        HStack {
+                            if subscriptionStore.isPurchasing {
+                                ProgressView().tint(.white)
+                            } else {
+                                Text("立即开通")
+                                    .fontWeight(.semibold)
+                            }
                         }
-                    }
-                    .foregroundColor(.white)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(
-                        LinearGradient(
-                            colors: [.blue, .blue.opacity(0.8)],
-                            startPoint: .leading,
-                            endPoint: .trailing
+                        .foregroundColor(.white)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(
+                            LinearGradient(
+                                colors: [Color.blue, Color.blue.opacity(0.85)],
+                                startPoint: .leading,
+                                endPoint: .trailing
+                            )
                         )
-                    )
-                    .cornerRadius(14)
-                }
-                .disabled(subscriptionStore.isPurchasing)
-                .padding(.horizontal, 24)
-                
-                // 免费体验入口
-                Button {
-                    completeOnboarding()
-                } label: {
-                    Text("先免费体验一次")
-                        .font(.subheadline)
-                        .foregroundColor(.secondary)
-                }
-                
-                // 恢复购买
-                Button {
-                    Task {
-                        await subscriptionStore.restorePurchases()
-                        if subscriptionStore.isVIP {
-                            completeOnboarding()
-                        }
+                        .cornerRadius(14)
                     }
-                } label: {
-                    Text("恢复购买")
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    .disabled(subscriptionStore.isPurchasing)
+                    
+                    // 免费试用
+                    Button {
+                        completeOnboarding()
+                    } label: {
+                        Text("先免费体验1次")
+                            .font(.subheadline)
+                            .foregroundColor(.blue)
+                    }
                 }
+                .padding(.horizontal, 20)
                 
-                // 说明
-                VStack(spacing: 4) {
-                    Text("订阅后可随时在系统设置中取消")
-                    Text("AI分析仅供参考，重要合同请咨询专业律师")
+                // 底部说明
+                VStack(spacing: 8) {
+                    Button {
+                        Task {
+                            await subscriptionStore.restorePurchases()
+                            if subscriptionStore.isVIP {
+                                completeOnboarding()
+                            }
+                        }
+                    } label: {
+                        Text("恢复购买")
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
+                    
+                    Text("自动续订，可随时取消 · AI分析仅供参考")
+                        .font(.caption2)
+                        .foregroundColor(.secondary.opacity(0.7))
+                        .multilineTextAlignment(.center)
                 }
-                .font(.caption)
-                .foregroundColor(.secondary.opacity(0.8))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 32)
                 .padding(.bottom, 40)
             }
         }
+        .background(Color(.systemGroupedBackground))
     }
     
     private func purchase() async {
-        let productID = selectedPlan == "yearly" ? 
-            SubscriptionStore.yearlyProductID : 
+        let productID = selectedPlan == "yearly" ?
+            SubscriptionStore.yearlyProductID :
             SubscriptionStore.monthlyProductID
         
         if let product = subscriptionStore.products.first(where: { $0.id == productID }) {
             let success = await subscriptionStore.purchase(product)
-            if success {
-                completeOnboarding()
-            }
+            if success { completeOnboarding() }
         } else {
-            // 产品未加载时直接进入
             completeOnboarding()
         }
     }
@@ -479,104 +463,50 @@ struct PaywallPage: View {
     }
 }
 
-// MARK: - 组件
-
-struct FeatureRow: View {
+struct BenefitItem: View {
     let icon: String
     let text: String
+    let highlight: Bool
     
     var body: some View {
-        HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(.blue)
-                .frame(width: 32)
-            
-            Text(text)
-                .font(.body)
-            
-            Spacer()
-        }
-    }
-}
-
-struct StepCard: View {
-    let step: String
-    let icon: String
-    let title: String
-    let description: String
-    let color: Color
-    
-    var body: some View {
-        HStack(spacing: 16) {
-            ZStack {
-                Circle()
-                    .fill(color.opacity(0.1))
-                    .frame(width: 56, height: 56)
-                
-                Image(systemName: icon)
-                    .font(.title2)
-                    .foregroundColor(color)
-            }
-            
-            VStack(alignment: .leading, spacing: 4) {
-                Text(title)
-                    .font(.headline)
-                
-                Text(description)
-                    .font(.subheadline)
-                    .foregroundColor(.secondary)
-            }
-            
-            Spacer()
-            
-            Text(step)
-                .font(.system(size: 24, weight: .bold))
-                .foregroundColor(color.opacity(0.3))
-        }
-        .padding(16)
-        .background(Color(.systemBackground))
-        .cornerRadius(12)
-        .shadow(color: .black.opacity(0.05), radius: 8, x: 0, y: 4)
-    }
-}
-
-struct BenefitRow: View {
-    let icon: String
-    let text: String
-    
-    var body: some View {
-        HStack(spacing: 12) {
+        HStack(spacing: 14) {
             Image(systemName: icon)
                 .font(.body)
-                .foregroundColor(.blue)
+                .foregroundColor(highlight ? .blue : .secondary)
                 .frame(width: 24)
             
             Text(text)
                 .font(.body)
+                .foregroundColor(highlight ? .primary : .secondary)
             
             Spacer()
             
-            Image(systemName: "checkmark")
-                .font(.caption)
+            Image(systemName: "checkmark.circle.fill")
+                .font(.body)
                 .foregroundColor(.green)
         }
     }
 }
 
-struct PlanCard: View {
+struct SubscriptionOption: View {
     let title: String
     let price: String
     let period: String
+    let originalPrice: String?
+    let badge: String?
     let subtitle: String
     let isSelected: Bool
-    let badge: String?
     let action: () -> Void
     
     var body: some View {
         Button(action: action) {
             HStack {
-                VStack(alignment: .leading, spacing: 4) {
+                // 选中指示
+                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                    .font(.title3)
+                    .foregroundColor(isSelected ? .blue : .gray.opacity(0.4))
+                
+                VStack(alignment: .leading, spacing: 2) {
                     HStack(spacing: 8) {
                         Text(title)
                             .font(.headline)
@@ -587,9 +517,9 @@ struct PlanCard: View {
                                 .font(.caption2)
                                 .fontWeight(.bold)
                                 .foregroundColor(.white)
-                                .padding(.horizontal, 8)
-                                .padding(.vertical, 3)
-                                .background(Color.orange)
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.red)
                                 .cornerRadius(4)
                         }
                     }
@@ -601,15 +531,23 @@ struct PlanCard: View {
                 
                 Spacer()
                 
-                HStack(alignment: .firstTextBaseline, spacing: 2) {
-                    Text(price)
-                        .font(.title2)
-                        .fontWeight(.bold)
-                        .foregroundColor(isSelected ? .blue : .primary)
+                VStack(alignment: .trailing, spacing: 2) {
+                    HStack(alignment: .firstTextBaseline, spacing: 2) {
+                        Text(price)
+                            .font(.title3)
+                            .fontWeight(.bold)
+                            .foregroundColor(.primary)
+                        Text(period)
+                            .font(.caption)
+                            .foregroundColor(.secondary)
+                    }
                     
-                    Text(period)
-                        .font(.caption)
-                        .foregroundColor(.secondary)
+                    if let original = originalPrice {
+                        Text(original)
+                            .font(.caption)
+                            .strikethrough()
+                            .foregroundColor(.secondary)
+                    }
                 }
             }
             .padding(16)
@@ -617,7 +555,7 @@ struct PlanCard: View {
             .cornerRadius(12)
             .overlay(
                 RoundedRectangle(cornerRadius: 12)
-                    .stroke(isSelected ? Color.blue : Color.gray.opacity(0.2), lineWidth: isSelected ? 2 : 1)
+                    .stroke(isSelected ? Color.blue : Color.clear, lineWidth: 2)
             )
         }
     }
