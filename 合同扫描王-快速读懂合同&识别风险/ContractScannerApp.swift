@@ -12,13 +12,18 @@ struct ContractScannerApp: App {
     @State private var contractStore = ContractStore()
     @State private var userStore = UserStore()
     @State private var subscriptionStore = SubscriptionStore()
+    @State private var hasCompletedOnboarding = UserDefaults.standard.bool(forKey: "has_completed_onboarding")
     
     var body: some Scene {
         WindowGroup {
-            MainTabView()
-                .environment(contractStore)
-                .environment(userStore)
-                .environment(subscriptionStore)
+            if hasCompletedOnboarding {
+                MainTabView()
+                    .environment(contractStore)
+                    .environment(userStore)
+                    .environment(subscriptionStore)
+            } else {
+                OnboardingView(hasCompletedOnboarding: $hasCompletedOnboarding)
+            }
         }
     }
 }
