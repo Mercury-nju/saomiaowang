@@ -72,62 +72,162 @@ struct OnboardingView: View {
 
 // MARK: - 第一页：痛点
 struct PainPointPage: View {
+    @State private var animateIcon = false
+    @State private var showContent = false
+    
     var body: some View {
-        VStack(spacing: 0) {
-            Spacer()
+        ZStack {
+            // 背景渐变
+            LinearGradient(
+                colors: [
+                    Color.red.opacity(0.05),
+                    Color.orange.opacity(0.03),
+                    Color(.systemBackground)
+                ],
+                startPoint: .top,
+                endPoint: .bottom
+            )
+            .ignoresSafeArea()
             
-            // 图标
-            ZStack {
-                Circle()
-                    .fill(Color.red.opacity(0.1))
-                    .frame(width: 120, height: 120)
+            VStack(spacing: 0) {
+                Spacer()
                 
-                Image(systemName: "doc.text.magnifyingglass")
-                    .font(.system(size: 50))
-                    .foregroundColor(.red.opacity(0.8))
-            }
-            .padding(.bottom, 32)
-            
-            // 痛点文案
-            VStack(spacing: 16) {
-                Text("看不懂合同？")
-                    .font(.system(size: 32, weight: .bold))
+                // 动态图标区域
+                ZStack {
+                    // 外圈脉冲
+                    Circle()
+                        .stroke(Color.red.opacity(0.15), lineWidth: 2)
+                        .frame(width: 160, height: 160)
+                        .scaleEffect(animateIcon ? 1.2 : 1.0)
+                        .opacity(animateIcon ? 0 : 0.8)
+                    
+                    // 中圈
+                    Circle()
+                        .fill(
+                            RadialGradient(
+                                colors: [Color.red.opacity(0.15), Color.red.opacity(0.05)],
+                                center: .center,
+                                startRadius: 20,
+                                endRadius: 70
+                            )
+                        )
+                        .frame(width: 140, height: 140)
+                    
+                    // 内圈
+                    Circle()
+                        .fill(Color.red.opacity(0.1))
+                        .frame(width: 100, height: 100)
+                    
+                    // 图标
+                    Image(systemName: "exclamationmark.triangle.fill")
+                        .font(.system(size: 44))
+                        .foregroundStyle(
+                            LinearGradient(
+                                colors: [.red, .orange],
+                                startPoint: .topLeading,
+                                endPoint: .bottomTrailing
+                            )
+                        )
+                        .symbolEffect(.pulse, options: .repeating)
+                }
+                .padding(.bottom, 40)
                 
-                Text("担心签了才发现有坑？")
-                    .font(.system(size: 32, weight: .bold))
+                // 主标题
+                VStack(spacing: 12) {
+                    Text("看不懂合同？")
+                        .font(.system(size: 34, weight: .bold))
+                        .opacity(showContent ? 1 : 0)
+                        .offset(y: showContent ? 0 : 20)
+                    
+                    Text("担心签了才发现有坑？")
+                        .font(.system(size: 28, weight: .semibold))
+                        .foregroundColor(.secondary)
+                        .opacity(showContent ? 1 : 0)
+                        .offset(y: showContent ? 0 : 20)
+                }
+                
+                Spacer()
+                
+                // 痛点卡片
+                VStack(spacing: 12) {
+                    PainPointCard(
+                        icon: "clock.fill",
+                        iconColor: .orange,
+                        title: "合同太长",
+                        subtitle: "没时间逐字细看"
+                    )
+                    .opacity(showContent ? 1 : 0)
+                    .offset(x: showContent ? 0 : -30)
+                    
+                    PainPointCard(
+                        icon: "text.book.closed.fill",
+                        iconColor: .purple,
+                        title: "专业术语多",
+                        subtitle: "看了也看不懂"
+                    )
+                    .opacity(showContent ? 1 : 0)
+                    .offset(x: showContent ? 0 : -30)
+                    
+                    PainPointCard(
+                        icon: "eye.slash.fill",
+                        iconColor: .red,
+                        title: "隐藏条款",
+                        subtitle: "签完才发现被坑"
+                    )
+                    .opacity(showContent ? 1 : 0)
+                    .offset(x: showContent ? 0 : -30)
+                }
+                .padding(.horizontal, 24)
+                
+                Spacer()
+                Spacer()
             }
-            
-            Spacer()
-            
-            // 痛点列表
-            VStack(alignment: .leading, spacing: 16) {
-                PainPointRow(icon: "clock", text: "合同太长，没时间细看")
-                PainPointRow(icon: "questionmark.circle", text: "专业术语多，看不懂")
-                PainPointRow(icon: "exclamationmark.triangle", text: "隐藏条款，容易踩坑")
+        }
+        .onAppear {
+            withAnimation(.easeOut(duration: 0.6)) {
+                showContent = true
             }
-            .padding(.horizontal, 40)
-            
-            Spacer()
-            Spacer()
+            withAnimation(.easeInOut(duration: 1.5).repeatForever(autoreverses: false)) {
+                animateIcon = true
+            }
         }
     }
 }
 
-struct PainPointRow: View {
+struct PainPointCard: View {
     let icon: String
-    let text: String
+    let iconColor: Color
+    let title: String
+    let subtitle: String
     
     var body: some View {
         HStack(spacing: 16) {
-            Image(systemName: icon)
-                .font(.title3)
-                .foregroundColor(.red.opacity(0.7))
-                .frame(width: 28)
+            // 图标
+            ZStack {
+                RoundedRectangle(cornerRadius: 12)
+                    .fill(iconColor.opacity(0.12))
+                    .frame(width: 48, height: 48)
+                
+                Image(systemName: icon)
+                    .font(.title3)
+                    .foregroundColor(iconColor)
+            }
             
-            Text(text)
-                .font(.body)
-                .foregroundColor(.secondary)
+            // 文字
+            VStack(alignment: .leading, spacing: 2) {
+                Text(title)
+                    .font(.headline)
+                Text(subtitle)
+                    .font(.subheadline)
+                    .foregroundColor(.secondary)
+            }
+            
+            Spacer()
         }
+        .padding(14)
+        .background(Color(.systemBackground))
+        .cornerRadius(14)
+        .shadow(color: .black.opacity(0.04), radius: 8, x: 0, y: 2)
     }
 }
 
