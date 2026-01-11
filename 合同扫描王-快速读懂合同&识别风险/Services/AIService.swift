@@ -154,7 +154,12 @@ class AIService {
         
         request.httpBody = try JSONSerialization.data(withJSONObject: requestBody)
         
-        let (data, response) = try await URLSession.shared.data(for: request)
+        let (data, response): (Data, URLResponse)
+        do {
+            (data, response) = try await URLSession.shared.data(for: request)
+        } catch {
+            throw AIError.networkError
+        }
         
         guard let httpResponse = response as? HTTPURLResponse else {
             throw AIError.invalidResponse
@@ -277,17 +282,26 @@ enum AIError: LocalizedError {
     case invalidResponse
     case apiError(Int, String)
     case parseError
+    case networkError
     
     var errorDescription: String? {
         switch self {
         case .invalidURL:
-            return "无效的API地址"
+            return "服务配置错误，请稍后重试"
         case .invalidResponse:
-            return "服务器响应无效"
-        case .apiError(let code, let message):
-            return "API错误(\(code)): \(message)"
+            return "服务器响应异常，请稍后重试"
+        case .apiError(let code, _):
+            if code == 401 || code == 403 {
+                return "服务授权失败，请联系客服"
+            } else if code >= 500 {
+                return "服务器繁忙，请稍后重试"
+            } else {
+                return "分析服务暂时不可用，请稍后重试"
+            }
         case .parseError:
-            return "解析响应数据失败"
+            return "分析结果解析失败，请重新尝试"
+        case .networkError:
+            return "网络连接失败，请检查网络后重试"
         }
     }
 }
