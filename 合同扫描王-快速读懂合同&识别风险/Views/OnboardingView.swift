@@ -529,6 +529,15 @@ struct PaywallPage: View {
                             .font(.caption2)
                             .foregroundColor(.secondary.opacity(0.8))
                         
+                        // 隐私政策和用户协议链接
+                        HStack(spacing: 4) {
+                            Link("隐私政策", destination: URL(string: "https://mercury-nju.github.io/saomiaowang/privacy-policy.html")!)
+                            Text("和")
+                            Link("用户协议", destination: URL(string: "https://mercury-nju.github.io/saomiaowang/user-agreement.html")!)
+                        }
+                        .font(.caption2)
+                        .foregroundColor(.secondary.opacity(0.8))
+                        
                         Text("AI分析仅供参考，重要合同请咨询专业律师")
                             .font(.caption2)
                             .foregroundColor(.secondary.opacity(0.6))
